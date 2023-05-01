@@ -22,7 +22,7 @@ gs_design_ahr(
   h1_spending = TRUE,
   test_upper = TRUE,
   test_lower = TRUE,
-  info_scale = c(0, 1, 2),
+  info_scale = c("h0_h1_info", "h0_info", "h1_info"),
   r = 18,
   tol = 1e-06,
   interval = c(0.01, 100)
@@ -69,7 +69,12 @@ single value \code{FALSE} indicated no lower bound; otherwise, a logical vector
 of the same length as \code{info} should indicate which analyses will have a
 lower bound.}
 
-\item{info_scale}{The information scale for calculation.}
+\item{info_scale}{Information scale for calculation. Options are:
+\itemize{
+\item \code{"h0_h1_info"} (default): variance under both null and alternative hypotheses is used.
+\item \code{"h0_info"}: variance under null hypothesis is used.
+\item \code{"h1_info"}: variance under alternative hypothesis is used.
+}}
 
 \item{r}{Integer value controlling grid for numerical integration as in
 Jennison and Turnbull (2000); default is 18, range is 1 to 80.
@@ -189,6 +194,32 @@ gs_design_ahr(
   lower = gs_spending_bound,
   lpar = list(sf = gsDesign::sfLDPocock, total_spend = 0.1, param = NULL, timing = NULL),
   h1_spending = TRUE
+)
+}
+
+# ----------------- #
+#    example 7      #
+# ----------------- #
+\donttest{
+gs_design_ahr(
+  alpha = 0.0125,
+  analysis_time = c(12, 24, 36),
+  upper = gs_spending_bound,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.0125, param = NULL, timing = NULL),
+  lower = gs_b,
+  lpar = rep(-Inf, 3)
+)
+
+gs_design_ahr(
+  alpha = 0.0125,
+  analysis_time = c(12, 24, 36),
+  upper = gs_b,
+  upar = gsDesign::gsDesign(
+    k = 3, test.type = 1, n.I = c(.25, .75, 1),
+    sfu = sfLDOF, sfupar = NULL, alpha = 0.0125
+  )$upper$bound,
+  lower = gs_b,
+  lpar = rep(-Inf, 3)
 )
 }
 }

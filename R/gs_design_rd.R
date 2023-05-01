@@ -50,7 +50,10 @@
 #'   as in Jennison and Turnbull (2000); default is 18, range is 1 to 80.
 #'   Larger values provide larger number of grid points and greater accuracy.
 #'   Normally, `r` will not be changed by the user.
-#' @param info_scale The information scale for calculation.
+#' @param info_scale Information scale for calculation. Options are:
+#'   - `"h0_h1_info"` (default): variance under both null and alternative hypotheses is used.
+#'   - `"h0_info"`: variance under null hypothesis is used.
+#'   - `"h1_info"`: variance under alternative hypothesis is used.
 #' @param weight The weighting scheme for stratified population.
 #' @param tol Tolerance parameter for boundary convergence (on Z-scale).
 #'
@@ -86,7 +89,7 @@
 #'   weight = "unstratified",
 #'   upper = gs_b,
 #'   lower = gs_b,
-#'   upar = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound,
+#'   upar = gsDesign(k = 2, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound,
 #'   lpar = c(qnorm(.1), rep(-Inf, 2))
 #' )
 #'
@@ -132,7 +135,7 @@ gs_design_rd <- function(p_c = tibble(stratum = "all", rate = .2),
                          lpar = c(qnorm(.1), rep(-Inf, 2)),
                          test_upper = TRUE,
                          test_lower = TRUE,
-                         info_scale = c(0, 1, 2),
+                         info_scale = c("h0_h1_info", "h0_info", "h1_info"),
                          binding = FALSE,
                          r = 18,
                          tol = 1e-6,
@@ -140,11 +143,8 @@ gs_design_rd <- function(p_c = tibble(stratum = "all", rate = .2),
   # --------------------------------------------- #
   #     check input values                        #
   # --------------------------------------------- #
-  info_scale <- if (methods::missingArg(info_scale)) {
-    2
-  } else {
-    match.arg(as.character(info_scale), choices = 0:2)
-  }
+  info_scale <- match.arg(info_scale)
+
   weight <- if (methods::missingArg(weight)) {
     "unstratified"
   } else {
@@ -229,6 +229,14 @@ gs_design_rd <- function(p_c = tibble(stratum = "all", rate = .2),
   # --------------------------------------------- #
   #     get statistical information               #
   # --------------------------------------------- #
+  inflac_fct <- if (info_scale == "h0_info") {
+    (y_gs %>% filter(bound == "upper", analysis == k))$info0 / x_fix$info0[1]
+  } else if (info_scale == "h1_info") {
+    (y_gs %>% filter(bound == "upper", analysis == k))$info1 / x_fix$info1[1]
+  } else if (info_scale == "h0_h1_info") {
+    (y_gs %>% filter(bound == "upper", analysis == k))$info1 / x_fix$info0[1]
+  }
+
   allout <- y_gs %>%
     mutate(
       rd = x_fix$rd,
@@ -240,14 +248,26 @@ gs_design_rd <- function(p_c = tibble(stratum = "all", rate = .2),
       } else {
         info0 / max(info0)
       },
-      n = (y_gs %>% filter(bound == "upper", analysis == k))$info
-        / ifelse(info_scale == 0, x_fix$info0[1], x_fix$info1[1]) * info_frac
+      n = inflac_fct * info_frac
     ) %>%
     select(c(
       analysis, bound, n, rd, rd0, z, probability, probability0,
       info, info0, info_frac, info_frac0, `~risk difference at bound`, `nominal p`
     )) %>%
     arrange(analysis, desc(bound))
+
+  # --------------------------------------------- #
+  #     get input parameters to output            #
+  # --------------------------------------------- #
+  input <- list(
+    p_c = p_c, p_e = p_e,
+    info_frac = info_frac, rd0 = rd0, alpha = alpha, beta = beta,
+    ratio = ratio, stratum_prev = stratum_prev, weight = weight,
+    upper = upper, upar = upar, test_upper = test_upper,
+    lower = lower, lpar = lpar, test_lower = test_lower,
+    h1_spending = h1_spending,
+    binding = binding, info_scale = info_scale, r = r, tol = tol
+  )
 
   # --------------------------------------------- #
   #     get bounds to output                      #
@@ -266,6 +286,7 @@ gs_design_rd <- function(p_c = tibble(stratum = "all", rate = .2),
   #     return the output                         #
   # --------------------------------------------- #
   ans <- list(
+    input = input,
     bound = bound %>% filter(!is.infinite(z)),
     analysis = analysis
   )
