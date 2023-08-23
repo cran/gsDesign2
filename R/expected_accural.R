@@ -21,10 +21,8 @@
 #' Computes the expected cumulative enrollment (accrual)
 #' given a set of piecewise constant enrollment rates and times.
 #'
+#' @inheritParams ahr
 #' @param time Times at which enrollment is to be computed.
-#' @param enroll_rate Piecewise constant enrollment rates expressed as a tibble
-#'   with `duration` for each piecewise constant period and
-#'   the `rate` of enrollment for that period.
 #'
 #' @return A vector with expected cumulative enrollment for the specified `times`.
 #'
@@ -46,7 +44,7 @@
 #' }
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
-#' @importFrom dplyr lag lead
+#' @importFrom dplyr lead
 #' @importFrom tibble tibble
 #' @importFrom stats stepfun
 #'
@@ -61,28 +59,31 @@
 #' # Example 2: unstratified design
 #' expected_accrual(
 #'   time = c(5, 10, 20),
-#'   enroll_rate = tibble(duration = c(3, 3, 18), rate = c(5, 10, 20))
+#'   enroll_rate = define_enroll_rate(
+#'     duration = c(3, 3, 18),
+#'     rate = c(5, 10, 20)
+#'   )
 #' )
 #'
 #' expected_accrual(
 #'   time = c(5, 10, 20),
-#'   enroll_rate = tibble(
-#'     duration = c(3, 3, 18), rate = c(5, 10, 20),
-#'     stratum = "All"
+#'   enroll_rate = define_enroll_rate(
+#'     duration = c(3, 3, 18),
+#'     rate = c(5, 10, 20),
 #'   )
 #' )
 #'
 #' # Example 3: stratified design
 #' expected_accrual(
 #'   time = c(24, 30, 40),
-#'   enroll_rate = tibble(
+#'   enroll_rate = define_enroll_rate(
 #'     stratum = c("subgroup", "complement"),
-#'     duration = 33,
+#'     duration = c(33, 33),
 #'     rate = c(30, 30)
 #'   )
 #' )
 expected_accrual <- function(time = 0:24,
-                             enroll_rate = tibble(duration = c(3, 3, 18), rate = c(5, 10, 20))) {
+                             enroll_rate = define_enroll_rate(duration = c(3, 3, 18), rate = c(5, 10, 20))) {
   # check input value
   # check input enrollment rate assumptions
   if (!is.numeric(time)) {
@@ -139,7 +140,7 @@ expected_accrual <- function(time = 0:24,
   if (n_strata == 1) {
     xx <- tibble(
       x = xvals,
-      duration = xvals - lag(xvals, default = 0),
+      duration = xvals - fastlag(xvals, first = 0),
       rate = ratefn(xvals), # enrollment rates at points (right continuous)
       eAccrual = cumsum(rate * duration) # expected accrual
     )
@@ -148,7 +149,7 @@ expected_accrual <- function(time = 0:24,
       FUN = function(i) {
         tibble(
           x = xvals[[i]],
-          duration = xvals[[i]] - lag(xvals[[i]], default = 0),
+          duration = xvals[[i]] - fastlag(xvals[[i]], first = 0),
           rate = ratefn[[i]](xvals[[i]]), # enrollment rates at points (right continuous)
           eAccrual = cumsum(rate * duration) # expected accrual
         )
@@ -173,7 +174,7 @@ expected_accrual <- function(time = 0:24,
         as.numeric(xx[[i]]$eAccrual[ind[[i]]])
       }
     )
-    ans <- ans %>% purrr::reduce(`+`)
+    ans <- Reduce(`+`, ans)
   }
 
   return(ans)

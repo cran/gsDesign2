@@ -24,7 +24,7 @@
 #' @param rd0 The risk difference under H0.
 #' @param ratio Experimental:Control randomization ratio.
 #' @param weight Weighting method, can be `"unstratified"`, `"ss"`,
-#'   `"invar_h0"`, or "invar_h1".
+#'   or `"invar"`.
 #'
 #' @return A tibble with columns as analysis index, sample size,
 #'   risk difference, risk difference under null hypothesis, theta1
@@ -32,20 +32,18 @@
 #'   theta0 (standardized treatment effect under null hypothesis),
 #'   and statistical information.
 #'
-#' @importFrom tibble tibble
 #'
 #' @export
 #'
 #' @examples
-#' library(tibble)
 #' # --------------------- #
 #' #      example 1        #
 #' # --------------------- #
 #' # unstratified case with H0: rd0 = 0
 #' gs_info_rd(
-#'   p_c = tibble(stratum = "All", rate = .15),
-#'   p_e = tibble(stratum = "All", rate = .1),
-#'   n = tibble(stratum = "All", n = c(100, 200, 300), analysis = 1:3),
+#'   p_c = tibble::tibble(stratum = "All", rate = .15),
+#'   p_e = tibble::tibble(stratum = "All", rate = .1),
+#'   n = tibble::tibble(stratum = "All", n = c(100, 200, 300), analysis = 1:3),
 #'   rd0 = 0,
 #'   ratio = 1
 #' )
@@ -55,9 +53,9 @@
 #' # --------------------- #
 #' # unstratified case with H0: rd0 != 0
 #' gs_info_rd(
-#'   p_c = tibble(stratum = "All", rate = .2),
-#'   p_e = tibble(stratum = "All", rate = .15),
-#'   n = tibble(stratum = "All", n = c(100, 200, 300), analysis = 1:3),
+#'   p_c = tibble::tibble(stratum = "All", rate = .2),
+#'   p_e = tibble::tibble(stratum = "All", rate = .15),
+#'   n = tibble::tibble(stratum = "All", n = c(100, 200, 300), analysis = 1:3),
 #'   rd0 = 0.005,
 #'   ratio = 1
 #' )
@@ -67,9 +65,9 @@
 #' # --------------------- #
 #' # stratified case under sample size weighting and H0: rd0 = 0
 #' gs_info_rd(
-#'   p_c = tibble(stratum = c("S1", "S2", "S3"), rate = c(.15, .2, .25)),
-#'   p_e = tibble(stratum = c("S1", "S2", "S3"), rate = c(.1, .16, .19)),
-#'   n = tibble(
+#'   p_c = tibble::tibble(stratum = c("S1", "S2", "S3"), rate = c(.15, .2, .25)),
+#'   p_e = tibble::tibble(stratum = c("S1", "S2", "S3"), rate = c(.1, .16, .19)),
+#'   n = tibble::tibble(
 #'     stratum = rep(c("S1", "S2", "S3"), each = 3),
 #'     analysis = rep(1:3, 3),
 #'     n = c(50, 100, 200, 40, 80, 160, 60, 120, 240)
@@ -84,22 +82,22 @@
 #' # --------------------- #
 #' # stratified case under inverse variance weighting and H0: rd0 = 0
 #' gs_info_rd(
-#'   p_c = tibble(
+#'   p_c = tibble::tibble(
 #'     stratum = c("S1", "S2", "S3"),
 #'     rate = c(.15, .2, .25)
 #'   ),
-#'   p_e = tibble(
+#'   p_e = tibble::tibble(
 #'     stratum = c("S1", "S2", "S3"),
 #'     rate = c(.1, .16, .19)
 #'   ),
-#'   n = tibble(
+#'   n = tibble::tibble(
 #'     stratum = rep(c("S1", "S2", "S3"), each = 3),
 #'     analysis = rep(1:3, 3),
 #'     n = c(50, 100, 200, 40, 80, 160, 60, 120, 240)
 #'   ),
 #'   rd0 = 0,
 #'   ratio = 1,
-#'   weight = "invar_h1"
+#'   weight = "invar"
 #' )
 #'
 #' # --------------------- #
@@ -107,15 +105,15 @@
 #' # --------------------- #
 #' # stratified case under sample size weighting and H0: rd0 != 0
 #' gs_info_rd(
-#'   p_c = tibble(
+#'   p_c = tibble::tibble(
 #'     stratum = c("S1", "S2", "S3"),
 #'     rate = c(.15, .2, .25)
 #'   ),
-#'   p_e = tibble(
+#'   p_e = tibble::tibble(
 #'     stratum = c("S1", "S2", "S3"),
 #'     rate = c(.1, .16, .19)
 #'   ),
-#'   n = tibble(
+#'   n = tibble::tibble(
 #'     stratum = rep(c("S1", "S2", "S3"), each = 3),
 #'     analysis = rep(1:3, 3),
 #'     n = c(50, 100, 200, 40, 80, 160, 60, 120, 240)
@@ -130,22 +128,22 @@
 #' # --------------------- #
 #' # stratified case under inverse variance weighting and H0: rd0 != 0
 #' gs_info_rd(
-#'   p_c = tibble(
+#'   p_c = tibble::tibble(
 #'     stratum = c("S1", "S2", "S3"),
 #'     rate = c(.15, .2, .25)
 #'   ),
-#'   p_e = tibble(
+#'   p_e = tibble::tibble(
 #'     stratum = c("S1", "S2", "S3"),
 #'     rate = c(.1, .16, .19)
 #'   ),
-#'   n = tibble(
+#'   n = tibble::tibble(
 #'     stratum = rep(c("S1", "S2", "S3"), each = 3),
 #'     analysis = rep(1:3, 3),
 #'     n = c(50, 100, 200, 40, 80, 160, 60, 120, 240)
 #'   ),
 #'   rd0 = 0.02,
 #'   ratio = 1,
-#'   weight = "invar_h1"
+#'   weight = "invar"
 #' )
 #'
 #' # --------------------- #
@@ -154,43 +152,43 @@
 #' # stratified case under inverse variance weighting and H0: rd0 != 0 and
 #' # rd0 difference for different statum
 #' gs_info_rd(
-#'   p_c = tibble(
+#'   p_c = tibble::tibble(
 #'     stratum = c("S1", "S2", "S3"),
 #'     rate = c(.15, .2, .25)
 #'   ),
-#'   p_e = tibble(
+#'   p_e = tibble::tibble(
 #'     stratum = c("S1", "S2", "S3"),
 #'     rate = c(.1, .16, .19)
 #'   ),
-#'   n = tibble(
+#'   n = tibble::tibble(
 #'     stratum = rep(c("S1", "S2", "S3"), each = 3),
 #'     analysis = rep(1:3, 3),
 #'     n = c(50, 100, 200, 40, 80, 160, 60, 120, 240)
 #'   ),
-#'   rd0 = tibble(
+#'   rd0 = tibble::tibble(
 #'     stratum = c("S1", "S2", "S3"),
 #'     rd0 = c(0.01, 0.02, 0.03)
 #'   ),
 #'   ratio = 1,
-#'   weight = "invar_h1"
+#'   weight = "invar"
 #' )
-#'
-gs_info_rd <- function(p_c = tibble::tibble(
-                         stratum = "all",
-                         rate = .2
-                       ),
-                       p_e = tibble::tibble(
-                         stratum = "all",
-                         rate = .15
-                       ),
-                       n = tibble::tibble(
-                         stratum = "all",
-                         n = c(100, 200, 300),
-                         analysis = 1:3
-                       ),
-                       rd0 = 0,
-                       ratio = 1,
-                       weight = c("unstratified", "ss", "invar_h0", "invar_h1")) {
+gs_info_rd <- function(
+    p_c = tibble::tibble(
+      stratum = "All",
+      rate = .2
+    ),
+    p_e = tibble::tibble(
+      stratum = "All",
+      rate = .15
+    ),
+    n = tibble::tibble(
+      stratum = "All",
+      n = c(100, 200, 300),
+      analysis = 1:3
+    ),
+    rd0 = 0,
+    ratio = 1,
+    weight = c("unstratified", "ss", "invar")) {
   n_analysis <- max(n$analysis)
   weight <- match.arg(weight)
 
@@ -251,18 +249,7 @@ gs_info_rd <- function(p_c = tibble::tibble(
         mutate(weight_per_k_per_s = n_c * n_e / (n_c + n_e) / sum_ss) %>%
         select(-sum_ss)
     )
-  } else if (weight == "invar_h0") {
-    suppressMessages(
-      tbl <- tbl %>%
-        left_join(
-          tbl %>%
-            dplyr::group_by(analysis) %>%
-            summarize(sum_inv_var_per_s = sum(1 / sigma2_H0_per_k_per_s))
-        ) %>%
-        mutate(weight_per_k_per_s = 1 / sigma2_H0_per_k_per_s / sum_inv_var_per_s) %>%
-        select(-sum_inv_var_per_s)
-    )
-  } else if (weight == "invar_h1") {
+  } else if (weight == "invar") {
     suppressMessages(
       tbl <- tbl %>%
         left_join(
@@ -292,8 +279,8 @@ gs_info_rd <- function(p_c = tibble::tibble(
       sigma2_H1 = sum(weight_per_k_per_s^2 * p_c * (1 - p_c) / n_c + weight_per_k_per_s^2 * p_e * (1 - p_e) / n_e)
     ) %>%
     mutate(
-      theta1 = rd / sqrt(sigma2_H1),
-      theta0 = rd0 / sqrt(sigma2_H0),
+      theta1 = rd,
+      theta0 = rd0,
       info1 = 1 / sigma2_H1,
       info0 = 1 / sigma2_H0
     ) %>%

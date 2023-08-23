@@ -5,9 +5,8 @@
 \title{Predict time at which a targeted event count is achieved}
 \usage{
 expected_time(
-  enroll_rate = tibble::tibble(stratum = "All", duration = c(2, 2, 10), rate = c(3, 6, 9)
-    * 5),
-  fail_rate = tibble::tibble(stratum = "All", duration = c(3, 100), fail_rate =
+  enroll_rate = define_enroll_rate(duration = c(2, 2, 10), rate = c(3, 6, 9) * 5),
+  fail_rate = define_fail_rate(stratum = "All", duration = c(3, 100), fail_rate =
     log(2)/c(9, 18), hr = c(0.9, 0.6), dropout_rate = rep(0.001, 2)),
   target_event = 150,
   ratio = 1,
@@ -15,12 +14,11 @@ expected_time(
 )
 }
 \arguments{
-\item{enroll_rate}{Piecewise constant enrollment rates by stratum and time period.}
+\item{enroll_rate}{An \code{enroll_rate} data frame with or without stratum
+created by \code{\link[=define_enroll_rate]{define_enroll_rate()}}.}
 
-\item{fail_rate}{Piecewise constant control group failure rates,
-duration for each piecewise constant period,
-hazard ratio for experimental vs control,
-and dropout rates by stratum and time period.}
+\item{fail_rate}{A \code{fail_rate} data frame with or without stratum
+created by \code{\link[=define_fail_rate]{define_fail_rate()}}.}
 
 \item{target_event}{The targeted number of events to be achieved.}
 
@@ -68,10 +66,12 @@ expected_time()
 # ------------------------#
 # check that result matches a finding using AHR()
 # Start by deriving an expected event count
-enroll_rate <- tibble::tibble(stratum = "All", duration = c(2, 2, 10), rate = c(3, 6, 9) * 5)
-fail_rate <- tibble::tibble(
-  stratum = "All", duration = c(3, 100), fail_rate = log(2) / c(9, 18),
-  hr = c(.9, .6), dropout_rate = rep(.001, 2)
+enroll_rate <- define_enroll_rate(duration = c(2, 2, 10), rate = c(3, 6, 9) * 5)
+fail_rate <- define_fail_rate(
+  duration = c(3, 100),
+  fail_rate = log(2) / c(9, 18),
+  hr = c(.9, .6),
+  dropout_rate = .001
 )
 total_duration <- 20
 xx <- ahr(enroll_rate, fail_rate, total_duration)

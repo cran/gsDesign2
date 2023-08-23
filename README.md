@@ -59,14 +59,13 @@ library(gt)
 
 # Constant enrollment over 12 months
 # Rate will be adjusted later by gsDesign2 NPH to get sample size
-enroll_rate <- tibble::tibble(stratum = "All", duration = 12, rate = 1)
+enroll_rate <- define_enroll_rate(duration = 12, rate = 1)
 
 # 12 month median exponential failure rate in control
 # 4 month delay in effect with HR=0.6 after
 # Low exponential dropout rate
 median_surv <- 12
-fail_rate <- tibble::tibble(
-  stratum = "All",
+fail_rate <- define_fail_rate(
   duration = c(4, Inf),
   fail_rate = log(2) / median_surv,
   hr = c(1, .6),

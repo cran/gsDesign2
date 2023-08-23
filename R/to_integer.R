@@ -18,12 +18,10 @@
 
 #' Rounds sample size to an even number for equal design
 #'
-#' @param x An object returned by [fixed_design()], [gs_design_ahr()],
-#'   [gs_design_wlr()], or [gs_design_combo()].
+#' @param x An object returned by fixed_design_xxx() and gs_design_xxx().
 #' @param ... Additional parameters (not used).
 #'
-#' @return A list similar to the output of [fixed_design()],
-#'   [gs_design_ahr()], [gs_design_wlr()], or [gs_design_combo()],
+#' @return A list similar to the output of fixed_design_xxx() and gs_design_xxx(),
 #'   except the sample size is an integer.
 #'
 #' @export to_integer
@@ -40,16 +38,15 @@ to_integer <- function(x, ...) {
 #'
 #' @examples
 #' library(dplyr)
-#' library(tibble)
 #' library(gsDesign2)
 #'
 #' # Average hazard ratio
 #' \donttest{
-#' x <- fixed_design("ahr",
+#' x <- fixed_design_ahr(
 #'   alpha = .025, power = .9,
-#'   enroll_rate = tibble(stratum = "All", duration = 18, rate = 1),
-#'   fail_rate = tibble(
-#'     stratum = "All", duration = c(4, 100),
+#'   enroll_rate = define_enroll_rate(duration = 18, rate = 1),
+#'   fail_rate = define_fail_rate(
+#'     duration = c(4, 100),
 #'     fail_rate = log(2) / 12, hr = c(1, .6),
 #'     dropout_rate = .001
 #'   ),
@@ -58,12 +55,13 @@ to_integer <- function(x, ...) {
 #' x %>% to_integer()
 #'
 #' # FH
-#' x <- fixed_design("fh",
+#' x <- fixed_design_fh(
 #'   alpha = 0.025, power = 0.9,
-#'   enroll_rate = tibble(stratum = "All", duration = 18, rate = 20),
-#'   fail_rate = tibble(
-#'     stratum = "All", duration = c(4, 100),
-#'     fail_rate = log(2) / 12, hr = c(1, .6),
+#'   enroll_rate = define_enroll_rate(duration = 18, rate = 20),
+#'   fail_rate = define_fail_rate(
+#'     duration = c(4, 100),
+#'     fail_rate = log(2) / 12,
+#'     hr = c(1, .6),
 #'     dropout_rate = .001
 #'   ),
 #'   rho = 0.5, gamma = 0.5,
@@ -72,11 +70,11 @@ to_integer <- function(x, ...) {
 #' x %>% to_integer()
 #'
 #' # MB
-#' x <- fixed_design("mb",
+#' x <- fixed_design_mb(
 #'   alpha = 0.025, power = 0.9,
-#'   enroll_rate = tibble(stratum = "All", duration = 18, rate = 20),
-#'   fail_rate = tibble(
-#'     stratum = "All", duration = c(4, 100),
+#'   enroll_rate = define_enroll_rate(duration = 18, rate = 20),
+#'   fail_rate = define_fail_rate(
+#'     duration = c(4, 100),
 #'     fail_rate = log(2) / 12, hr = c(1, .6),
 #'     dropout_rate = .001
 #'   ),
@@ -271,7 +269,7 @@ to_integer.gs_design <- function(x, sample_size = TRUE, ...) {
   } else if ("rd" %in% class(x)) {
     n_stratum <- length(x$input$p_c$stratum)
 
-    sample_size_new <- tibble(
+    sample_size_new <- tibble::tibble(
       analysis = 1:n_analysis,
       n = c(
         floor(x$analysis$n[1:(n_analysis - 1)] / multiply_factor),
@@ -288,7 +286,7 @@ to_integer.gs_design <- function(x, sample_size = TRUE, ...) {
 
     if (n_stratum == 1) {
       suppressMessages(
-        tbl_n <- tibble(
+        tbl_n <- tibble::tibble(
           analysis = rep(1:n_analysis, each = n_stratum),
           stratum = rep(x$input$p_c$stratum, n_analysis)
         ) %>%
@@ -296,7 +294,7 @@ to_integer.gs_design <- function(x, sample_size = TRUE, ...) {
       )
     } else {
       suppressMessages(
-        tbl_n <- tibble(
+        tbl_n <- tibble::tibble(
           analysis = rep(1:n_analysis, each = n_stratum),
           stratum = rep(x$input$p_c$stratum, n_analysis)
         ) %>%

@@ -13,8 +13,7 @@ to_integer(x, ...)
 \method{to_integer}{gs_design}(x, sample_size = TRUE, ...)
 }
 \arguments{
-\item{x}{An object returned by \code{\link[=fixed_design]{fixed_design()}}, \code{\link[=gs_design_ahr]{gs_design_ahr()}},
-\code{\link[=gs_design_wlr]{gs_design_wlr()}}, or \code{\link[=gs_design_combo]{gs_design_combo()}}.}
+\item{x}{An object returned by fixed_design_xxx() and gs_design_xxx().}
 
 \item{...}{Additional parameters (not used).}
 
@@ -22,8 +21,7 @@ to_integer(x, ...)
 sample size to an even integer.}
 }
 \value{
-A list similar to the output of \code{\link[=fixed_design]{fixed_design()}},
-\code{\link[=gs_design_ahr]{gs_design_ahr()}}, \code{\link[=gs_design_wlr]{gs_design_wlr()}}, or \code{\link[=gs_design_combo]{gs_design_combo()}},
+A list similar to the output of fixed_design_xxx() and gs_design_xxx(),
 except the sample size is an integer.
 }
 \description{
@@ -31,16 +29,15 @@ Rounds sample size to an even number for equal design
 }
 \examples{
 library(dplyr)
-library(tibble)
 library(gsDesign2)
 
 # Average hazard ratio
 \donttest{
-x <- fixed_design("ahr",
+x <- fixed_design_ahr(
   alpha = .025, power = .9,
-  enroll_rate = tibble(stratum = "All", duration = 18, rate = 1),
-  fail_rate = tibble(
-    stratum = "All", duration = c(4, 100),
+  enroll_rate = define_enroll_rate(duration = 18, rate = 1),
+  fail_rate = define_fail_rate(
+    duration = c(4, 100),
     fail_rate = log(2) / 12, hr = c(1, .6),
     dropout_rate = .001
   ),
@@ -49,12 +46,13 @@ x <- fixed_design("ahr",
 x \%>\% to_integer()
 
 # FH
-x <- fixed_design("fh",
+x <- fixed_design_fh(
   alpha = 0.025, power = 0.9,
-  enroll_rate = tibble(stratum = "All", duration = 18, rate = 20),
-  fail_rate = tibble(
-    stratum = "All", duration = c(4, 100),
-    fail_rate = log(2) / 12, hr = c(1, .6),
+  enroll_rate = define_enroll_rate(duration = 18, rate = 20),
+  fail_rate = define_fail_rate(
+    duration = c(4, 100),
+    fail_rate = log(2) / 12,
+    hr = c(1, .6),
     dropout_rate = .001
   ),
   rho = 0.5, gamma = 0.5,
@@ -63,11 +61,11 @@ x <- fixed_design("fh",
 x \%>\% to_integer()
 
 # MB
-x <- fixed_design("mb",
+x <- fixed_design_mb(
   alpha = 0.025, power = 0.9,
-  enroll_rate = tibble(stratum = "All", duration = 18, rate = 20),
-  fail_rate = tibble(
-    stratum = "All", duration = c(4, 100),
+  enroll_rate = define_enroll_rate(duration = 18, rate = 20),
+  fail_rate = define_fail_rate(
+    duration = c(4, 100),
     fail_rate = log(2) / 12, hr = c(1, .6),
     dropout_rate = .001
   ),

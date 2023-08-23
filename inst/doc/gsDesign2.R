@@ -20,8 +20,7 @@ library(gt)
 library(ggplot2)
 
 ## -----------------------------------------------------------------------------
-enroll_rate <- tibble(
-  stratum = "All",
+enroll_rate <- define_enroll_rate(
   duration = c(2, 2, 2, 6),
   rate = (1:4) / 4
 )
@@ -31,8 +30,7 @@ enroll_rate %>% gt()
 ## -----------------------------------------------------------------------------
 median_surv <- 12
 
-fail_rate <- tibble::tibble(
-  stratum = "All",
+fail_rate <- define_fail_rate(
   duration = c(4, Inf),
   fail_rate = log(2) / median_surv,
   hr = c(1, .6),
@@ -44,8 +42,7 @@ fail_rate %>% gt()
 ## -----------------------------------------------------------------------------
 alpha <- .025
 beta <- .1 # 1 - targeted power
-d <- fixed_design(
-  x = "ahr", # Method for computing sample size
+d <- fixed_design_ahr(
   enroll_rate = enroll_rate, # Relative enrollment rates
   fail_rate = fail_rate, # Failure rates from above
   alpha = alpha, # Type I error
