@@ -21,7 +21,7 @@
 #' Based on piecewise enrollment rate, failure rate, and dropout rates computes
 #' approximate information and effect size using an average hazard ratio model.
 #'
-#' @param enroll_rate Enrollment rates.
+#' @inheritParams ahr
 #' @param fail_rate Failure and dropout rates.
 #' @param ratio Experimental:Control randomization ratio.
 #' @param event Targeted minimum events at each analysis.
@@ -54,15 +54,13 @@
 #' @export
 #'
 #' @examples
-#' library(tibble)
 #' library(gsDesign2)
 #'
 #' # Set enrollment rates
-#' enroll_rate <- tibble(stratum = "All", duration = 12, rate = 500 / 12)
+#' enroll_rate <- define_enroll_rate(duration = 12, rate = 500 / 12)
 #'
 #' # Set failure rates
-#' fail_rate <- tibble(
-#'   stratum = "All",
+#' fail_rate <- define_fail_rate(
 #'   duration = c(4, 100),
 #'   fail_rate = log(2) / 15, # median survival 15 month
 #'   hr = c(1, .6),
@@ -77,24 +75,23 @@
 #'   enroll_rate = enroll_rate, fail_rate = fail_rate,
 #'   event = event, analysis_time = analysis_time
 #' )
-gs_info_wlr <- function(enroll_rate = tibble::tibble(
-                          stratum = "All",
-                          duration = c(2, 2, 10),
-                          rate = c(3, 6, 9)
-                        ),
-                        fail_rate = tibble::tibble(
-                          stratum = "All",
-                          duration = c(3, 100),
-                          fail_rate = log(2) / c(9, 18),
-                          hr = c(.9, .6),
-                          dropout_rate = rep(.001, 2)
-                        ),
-                        ratio = 1, # Experimental:Control randomization ratio
-                        event = NULL, # event at analyses
-                        analysis_time = NULL, # Times of analyses
-                        weight = wlr_weight_fh,
-                        approx = "asymptotic",
-                        interval = c(.01, 100)) {
+gs_info_wlr <- function(
+    enroll_rate = define_enroll_rate(
+      duration = c(2, 2, 10),
+      rate = c(3, 6, 9)
+    ),
+    fail_rate = define_fail_rate(
+      duration = c(3, 100),
+      fail_rate = log(2) / c(9, 18),
+      hr = c(.9, .6),
+      dropout_rate = .001
+    ),
+    ratio = 1, # Experimental:Control randomization ratio
+    event = NULL, # Event at analyses
+    analysis_time = NULL, # Times of analyses
+    weight = wlr_weight_fh,
+    approx = "asymptotic",
+    interval = c(.01, 100)) {
   if (is.null(analysis_time) && is.null(event)) {
     stop("gs_info_wlr(): One of event and analysis_time must be a numeric value or vector with increasing values!")
   }

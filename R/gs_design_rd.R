@@ -62,7 +62,6 @@
 #' @details
 #' To be added.
 #'
-#' @importFrom tibble tibble
 #' @importFrom gsDesign gsDesign sfLDOF
 #' @importFrom stats qnorm
 #' @importFrom dplyr mutate select arrange desc
@@ -70,7 +69,6 @@
 #' @export
 #'
 #' @examples
-#' library(tibble)
 #' library(gsDesign)
 #'
 #' # ----------------- #
@@ -78,8 +76,8 @@
 #' #------------------ #
 #' # unstratified group sequential design
 #' gs_design_rd(
-#'   p_c = tibble(stratum = "All", rate = .2),
-#'   p_e = tibble(stratum = "All", rate = .15),
+#'   p_c = tibble::tibble(stratum = "All", rate = .2),
+#'   p_e = tibble::tibble(stratum = "All", rate = .15),
 #'   info_frac = c(0.7, 1),
 #'   rd0 = 0,
 #'   alpha = .025,
@@ -98,11 +96,11 @@
 #' # ----------------- #
 #' # stratified group sequential design
 #' gs_design_rd(
-#'   p_c = tibble(
+#'   p_c = tibble::tibble(
 #'     stratum = c("biomarker positive", "biomarker negative"),
 #'     rate = c(.2, .25)
 #'   ),
-#'   p_e = tibble(
+#'   p_e = tibble::tibble(
 #'     stratum = c("biomarker positive", "biomarker negative"),
 #'     rate = c(.15, .22)
 #'   ),
@@ -111,7 +109,7 @@
 #'   alpha = .025,
 #'   beta = .1,
 #'   ratio = 1,
-#'   stratum_prev = tibble(
+#'   stratum_prev = tibble::tibble(
 #'     stratum = c("biomarker positive", "biomarker negative"),
 #'     prevalence = c(.4, .6)
 #'   ),
@@ -120,15 +118,15 @@
 #'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
 #'   lpar = rep(-Inf, 2)
 #' )
-gs_design_rd <- function(p_c = tibble(stratum = "all", rate = .2),
-                         p_e = tibble(stratum = "all", rate = .15),
+gs_design_rd <- function(p_c = tibble::tibble(stratum = "All", rate = .2),
+                         p_e = tibble::tibble(stratum = "All", rate = .15),
                          info_frac = 1:3 / 3,
                          rd0 = 0,
                          alpha = .025,
                          beta = .1,
                          ratio = 1,
                          stratum_prev = NULL,
-                         weight = c("unstratified", "ss", "invar_h1", "invar_h0"),
+                         weight = c("unstratified", "ss", "invar"),
                          upper = gs_b,
                          lower = gs_b,
                          upar = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound,
@@ -139,7 +137,7 @@ gs_design_rd <- function(p_c = tibble(stratum = "all", rate = .2),
                          binding = FALSE,
                          r = 18,
                          tol = 1e-6,
-                         h1_spending = FALSE) {
+                         h1_spending = TRUE) {
   # --------------------------------------------- #
   #     check input values                        #
   # --------------------------------------------- #
@@ -164,7 +162,7 @@ gs_design_rd <- function(p_c = tibble(stratum = "all", rate = .2),
   x_fix <- gs_info_rd(
     p_c = p_c,
     p_e = p_e,
-    n = tibble(
+    n = tibble::tibble(
       analysis = 1,
       stratum = p_c$stratum,
       n = if (is.null(stratum_prev)) {
@@ -185,7 +183,7 @@ gs_design_rd <- function(p_c = tibble(stratum = "all", rate = .2),
   x_gs <- gs_info_rd(
     p_c = p_c,
     p_e = p_e,
-    n = tibble(
+    n = tibble::tibble(
       analysis = rep(1:k, n_strata),
       stratum = rep(p_c$stratum, each = k),
       n = if (is.null(stratum_prev)) {

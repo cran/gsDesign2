@@ -35,7 +35,6 @@
 #' }
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
-#' @importFrom tibble tibble
 #' @importFrom dplyr all_of
 #'
 #' @export
@@ -45,15 +44,13 @@
 #' library(dplyr)
 #' library(mvtnorm)
 #' library(gsDesign)
-#' library(tibble)
 #' library(gsDesign2)
 #'
 #' # set enrollment rates
-#' enroll_rate <- tibble(stratum = "All", duration = 12, rate = 500 / 12)
+#' enroll_rate <- define_enroll_rate(duration = 12, rate = 500 / 12)
 #'
 #' # set failure rates
-#' fail_rate <- tibble(
-#'   stratum = "All",
+#' fail_rate <- define_fail_rate(
 #'   duration = c(4, 100),
 #'   fail_rate = log(2) / 15, # median survival 15 month
 #'   hr = c(1, .6),
@@ -112,47 +109,46 @@
 #'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2),
 #'   analysis_time = c(12, 24, 36)
 #' )
-gs_design_wlr <- function(enroll_rate = tibble(
-                            stratum = "All", duration = c(2, 2, 10),
-                            rate = c(3, 6, 9)
-                          ),
-                          fail_rate = tibble(
-                            stratum = "All", duration = c(3, 100),
-                            fail_rate = log(2) / c(9, 18), hr = c(.9, .6),
-                            dropout_rate = rep(.001, 2)
-                          ),
-                          weight = wlr_weight_fh, approx = "asymptotic",
-                          alpha = 0.025, beta = 0.1, ratio = 1,
-                          info_frac = NULL,
-                          info_scale = c("h0_h1_info", "h0_info", "h1_info"),
-                          analysis_time = 36,
-                          binding = FALSE,
-                          upper = gs_b,
-                          upar = gsDesign(
-                            k = 3, test.type = 1,
-                            n.I = c(.25, .75, 1), sfu = sfLDOF, sfupar = NULL
-                          )$upper$bound,
-                          lower = gs_b,
-                          lpar = c(qnorm(.1), -Inf, -Inf),
-                          test_upper = TRUE,
-                          test_lower = TRUE,
-                          h1_spending = TRUE,
-                          r = 18, tol = 1e-6,
-                          interval = c(.01, 100)) {
+gs_design_wlr <- function(
+    enroll_rate = define_enroll_rate(
+      duration = c(2, 2, 10),
+      rate = c(3, 6, 9)
+    ),
+    fail_rate = tibble(
+      stratum = "All", duration = c(3, 100),
+      fail_rate = log(2) / c(9, 18), hr = c(.9, .6),
+      dropout_rate = rep(.001, 2)
+    ),
+    weight = wlr_weight_fh, approx = "asymptotic",
+    alpha = 0.025, beta = 0.1, ratio = 1,
+    info_frac = NULL,
+    info_scale = c("h0_h1_info", "h0_info", "h1_info"),
+    analysis_time = 36,
+    binding = FALSE,
+    upper = gs_b,
+    upar = gsDesign(
+      k = 3, test.type = 1,
+      n.I = c(.25, .75, 1), sfu = sfLDOF, sfupar = NULL
+    )$upper$bound,
+    lower = gs_b,
+    lpar = c(qnorm(.1), -Inf, -Inf),
+    test_upper = TRUE,
+    test_lower = TRUE,
+    h1_spending = TRUE,
+    r = 18, tol = 1e-6,
+    interval = c(.01, 100)) {
   # --------------------------------------------- #
   #     check input values                        #
   # --------------------------------------------- #
   msg <- "gs_design_wlr(): analysis_time must be a
   positive number or positive increasing sequence"
   if (!is.vector(analysis_time, mode = "numeric")) stop(msg)
-  if (min(analysis_time - dplyr::lag(analysis_time, def = 0)) <= 0) stop(msg)
+  if (min(analysis_time - fastlag(analysis_time, first = 0)) <= 0) stop(msg)
   msg <- "gs_design_wlr(): info_frac must be a positive
   number or positive increasing sequence on (0, 1] with final value of 1"
-  if (is.null(info_frac)) {
-    info_frac <- 1
-  }
+  if (is.null(info_frac)) info_frac <- 1
   if (!is.vector(info_frac, mode = "numeric")) stop(msg)
-  if (min(info_frac - dplyr::lag(info_frac, def = 0)) <= 0) stop(msg)
+  if (min(info_frac - fastlag(info_frac, first = 0)) <= 0) stop(msg)
   if (max(info_frac) != 1) stop(msg)
   msg <- "gs_design_wlr(): info_frac and analysis_time must have the same length if both have length > 1"
   if ((length(analysis_time) > 1) && (length(info_frac) > 1) && (length(info_frac) != length(analysis_time))) stop(msg)

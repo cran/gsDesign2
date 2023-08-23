@@ -22,14 +22,12 @@ library(gsDesign)
 library(gsDesign2)
 library(tibble)
 
-enroll_rate <- tibble(
-  stratum = "All",
+enroll_rate <- define_enroll_rate(
   duration = 12,
   rate = 500 / 12
 )
 
-fail_rate <- tibble(
-  stratum = "All",
+fail_rate <- define_fail_rate(
   duration = c(4, 100),
   fail_rate = log(2) / 15, # median survival 15 month
   hr = c(1, .6),
@@ -357,7 +355,7 @@ library(tibble)
 library(gsDesign2)
 
 # set enrollment rates
-enroll_rate <- tibble(stratum = "All", duration = 12, rate = 500 / 12)
+enroll_rate <- define_enroll_rate(duration = 12, rate = 500 / 12)
 # set failure rates
 fail_rate <- tibble(
   stratum = "All",
@@ -590,7 +588,7 @@ toc()
 gs_info_wlr.R
 
 ```{r}
-enroll_rate <- tibble(stratum = "All", duration = 12, rate = 500 / 12)
+enroll_rate <- define_enroll_rate(duration = 12, rate = 500 / 12)
 
 fail_rate <- tibble(
   stratum = "All",
@@ -1008,7 +1006,7 @@ library(gsDesign)
 library(gsDesign2)
 
 # set enrollment rates
-enroll_rate <- tibble(stratum = "All", duration = 12, rate = 500 / 12)
+enroll_rate <- define_enroll_rate(duration = 12, rate = 500 / 12)
 # set failure rates
 fail_rate <- tibble(
   stratum = "All",

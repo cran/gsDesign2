@@ -1,5 +1,6 @@
 ---
 title: "Quick start for NPH sample size and power"
+author: "Keaven M. Anderson"
 output:
   rmarkdown::html_vignette:
     css: "custom.css"
@@ -80,8 +81,7 @@ The rates will be increased later to power the design appropriately.
 However, the fixed enrollment rate periods will remain unchanged.
 
 ```{r}
-enroll_rate <- tibble(
-  stratum = "All",
+enroll_rate <- define_enroll_rate(
   duration = c(2, 2, 2, 6),
   rate = (1:4) / 4
 )
@@ -105,8 +105,7 @@ Finally, we assume a low $0.001$ exponential dropout rate per month for both tre
 ```{r}
 median_surv <- 12
 
-fail_rate <- tibble::tibble(
-  stratum = "All",
+fail_rate <- define_fail_rate(
   duration = c(4, Inf),
   fail_rate = log(2) / median_surv,
   hr = c(1, .6),
@@ -124,8 +123,7 @@ Under the above enrollment, failure and dropout rate assumptions we now derive s
 ```{r}
 alpha <- .025
 beta <- .1 # 1 - targeted power
-d <- fixed_design(
-  x = "ahr", # Method for computing sample size
+d <- fixed_design_ahr(
   enroll_rate = enroll_rate, # Relative enrollment rates
   fail_rate = fail_rate, # Failure rates from above
   alpha = alpha, # Type I error

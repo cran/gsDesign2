@@ -5,17 +5,19 @@
 \title{Expected events observed under piecewise exponential model}
 \usage{
 expected_event(
-  enroll_rate = tibble::tibble(duration = c(2, 2, 10), rate = c(3, 6, 9)),
-  fail_rate = tibble::tibble(duration = c(3, 100), fail_rate = log(2)/c(9, 18),
-    dropout_rate = rep(0.001, 2)),
+  enroll_rate = define_enroll_rate(duration = c(2, 2, 10), rate = c(3, 6, 9)),
+  fail_rate = define_fail_rate(duration = c(3, 100), fail_rate = log(2)/c(9, 18),
+    dropout_rate = 0.001),
   total_duration = 25,
   simple = TRUE
 )
 }
 \arguments{
-\item{enroll_rate}{Enrollment rates; see details and examples.}
+\item{enroll_rate}{An \code{enroll_rate} data frame with or without stratum
+created by \code{\link[=define_enroll_rate]{define_enroll_rate()}}.}
 
-\item{fail_rate}{Failure rates and dropout rates by period.}
+\item{fail_rate}{A \code{fail_rate} data frame with or without stratum
+created by \code{\link[=define_fail_rate]{define_fail_rate()}}.}
 
 \item{total_duration}{Total follow-up from start of enrollment to data cutoff.}
 
@@ -30,7 +32,7 @@ the following variables for each period specified in \code{fail_rate}:
 \itemize{
 \item \code{t}: start of period.
 \item \code{fail_rate}: failure rate during the period.
-\item \code{Events}: expected events during the period.
+\item \code{event}: expected events during the period.
 }
 
 The records in the returned tibble correspond to the input tibble \code{fail_rate}.
@@ -85,7 +87,6 @@ maximize flexibility for a variety of purposes.
 }
 
 \examples{
-library(tibble)
 library(gsDesign2)
 
 # Default arguments, simple output (total event count only)
@@ -99,16 +100,16 @@ expected_event(total_duration = .5)
 
 # Single time period example
 expected_event(
-  enroll_rate = tibble(duration = 10, rate = 10),
-  fail_rate = tibble(duration = 100, fail_rate = log(2) / 6, dropout_rate = .01),
+  enroll_rate = define_enroll_rate(duration = 10, rate = 10),
+  fail_rate = define_fail_rate(duration = 100, fail_rate = log(2) / 6, dropout_rate = .01),
   total_duration = 22,
   simple = FALSE
 )
 
 # Single time period example, multiple enrollment periods
 expected_event(
-  enroll_rate = tibble(duration = c(5, 5), rate = c(10, 20)),
-  fail_rate = tibble(duration = 100, fail_rate = log(2) / 6, dropout_rate = .01),
+  enroll_rate = define_enroll_rate(duration = c(5, 5), rate = c(10, 20)),
+  fail_rate = define_fail_rate(duration = 100, fail_rate = log(2) / 6, dropout_rate = .01),
   total_duration = 22, simple = FALSE
 )
 }

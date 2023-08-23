@@ -5,41 +5,31 @@
 \title{Average hazard ratio under non-proportional hazards (test version)}
 \usage{
 ahr(
-  enroll_rate = tibble::tibble(stratum = "All", duration = c(2, 2, 10), rate = c(3, 6,
-    9)),
-  fail_rate = tibble::tibble(stratum = "All", duration = c(3, 100), fail_rate =
-    log(2)/c(9, 18), hr = c(0.9, 0.6), dropout_rate = rep(0.001, 2)),
+  enroll_rate = define_enroll_rate(duration = c(2, 2, 10), rate = c(3, 6, 9)),
+  fail_rate = define_fail_rate(duration = c(3, 100), fail_rate = log(2)/c(9, 18), hr =
+    c(0.9, 0.6), dropout_rate = 0.001),
   total_duration = 30,
-  ratio = 1,
-  simple = TRUE
+  ratio = 1
 )
 }
 \arguments{
-\item{enroll_rate}{Piecewise constant enrollment rates by stratum and time period.}
+\item{enroll_rate}{An \code{enroll_rate} data frame with or without stratum
+created by \code{\link[=define_enroll_rate]{define_enroll_rate()}}.}
 
-\item{fail_rate}{Piecewise constant control group failure rates, duration
-for each piecewise constant period,
-hazard ratio for experimental vs control, and dropout rates by stratum and time period.}
+\item{fail_rate}{A \code{fail_rate} data frame with or without stratum
+created by \code{\link[=define_fail_rate]{define_fail_rate()}}.}
 
-\item{total_duration}{Total follow-up from start of enrollment to data cutoff;
-this can be a single value or a vector of positive numbers.}
+\item{total_duration}{Total follow-up from start of enrollment to data
+cutoff; this can be a single value or a vector of positive numbers.}
 
 \item{ratio}{Ratio of experimental to control randomization.}
-
-\item{simple}{Logical; if \code{TRUE} (default), for each value in input
-\code{total_duration} overall event count,
-statistical information and average hazard ratio are given;
-if \code{FALSE}, hazard ratio, expected events, and statistical information are
-produced by stratum and underlying hazard ratio.}
 }
 \value{
-A tibble with \code{Time} (from \code{total_duration}),
-\code{AHR} (average hazard ratio), \code{Events} (expected number of events),
+A tibble with \code{time} (from \code{total_duration}),
+\code{ahr} (average hazard ratio), \code{event} (expected number of events),
 \code{info} (information under given scenarios), \code{and} info0
 (information under related null hypothesis) for each value of
-\code{total_duration} input; if \code{simple = FALSE}, \code{stratum} and \code{t}
-(beginning of each constant HR period) are also returned and
-\code{HR} is returned instead of \code{AHR}.
+\code{total_duration} input.
 }
 \description{
 Provides a geometric average hazard ratio under
@@ -61,7 +51,6 @@ and enrollment pattern where the enrollment, failure and dropout rates changes o
    \item Validate if input failure rate contains dropout rate column.
    \item Validate if input trial total follow-up (total duration) is a non-empty vector of positive integers.
    \item Validate if strata is the same in enrollment rate and failure rate.
-   \item Validate if input simple is logical.
    \item Compute the proportion in each group.
    \item Compute the expected events by treatment groups, stratum and time period.
    \item Calculate the expected number of events for all time points in the total
@@ -77,9 +66,7 @@ and enrollment pattern where the enrollment, failure and dropout rates changes o
       information under the null and the given scenarios.
       }
    \item Return a tibble of overall event count, statistical information and average hazard ratio
-   of each value in total_duration if the input simple is true, or a tibble of hazard ratio,
-   expected events and statistical information  produced by stratum and
-   underlying hazard ratio if the input simple is false.
+   of each value in total_duration.
    \item Calculation of \code{ahr} for different design scenarios, and the comparison to the
    simulation studies are defined in vignette/AHRVignette.Rmd.
   }
@@ -92,24 +79,20 @@ and enrollment pattern where the enrollment, failure and dropout rates changes o
 ahr()
 
 # Example: default with multiple analysis times (varying total_duration)
-
 ahr(total_duration = c(15, 30))
 
 # Stratified population
-enroll_rate <- tibble::tibble(
+enroll_rate <- define_enroll_rate(
   stratum = c(rep("Low", 2), rep("High", 3)),
   duration = c(2, 10, 4, 4, 8),
   rate = c(5, 10, 0, 3, 6)
 )
-fail_rate <- tibble::tibble(
+fail_rate <- define_fail_rate(
   stratum = c(rep("Low", 2), rep("High", 2)),
   duration = 1,
   fail_rate = c(.1, .2, .3, .4),
-  hr = c(.9, .75, .8, .6),
-  dropout_rate = .001
+  dropout_rate = .001,
+  hr = c(.9, .75, .8, .6)
 )
 ahr(enroll_rate = enroll_rate, fail_rate = fail_rate, total_duration = c(15, 30))
-
-# Same example, give results by strata and time period
-ahr(enroll_rate = enroll_rate, fail_rate = fail_rate, total_duration = c(15, 30), simple = FALSE)
 }

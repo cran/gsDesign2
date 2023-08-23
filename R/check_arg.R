@@ -16,157 +16,195 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#' Check argument type, length, and dimension
+#'
+#' @param arg An argument to be checked.
+#' @param type A character vector of candidate argument type.
+#' @param length A numeric value of argument length or `NULL`.
+#' @param dim A numeric vector of argument dimension or `NULL`.
+#'
+#' @return Detailed error message for failed checks.
+#'
+#' @noRd
+#'
+#' @details
+#' If `type`, `length`, or `dim` is `NULL`, the corresponding check
+#' will not be executed.
+#'
+#' @section Specification:
+#' \if{latex}{
+#'  \itemize{
+#'    \item Check if arg is NULL.
+#'    \item Extract the type, length and dim information from arg.
+#'    \item Compare with target values and report error message if it does not match.
+#'  }
+#'  }
+#' \if{html}{The contents of this section are shown in PDF user manual only.}
+#'
+#' @examples
+#' tbl <- as.data.frame(matrix(1:9, nrow = 3))
+#' check_args(arg = tbl, type = c("data.frame"))
+#'
+#' vec <- c("a", "b", "c")
+#' check_args(arg = vec, type = c("character"), length = c(2, 4))
+check_args <- function(arg, type, length = NULL, dim = NULL) {
+  if (is.null(arg)) {
+    return(NULL)
+  }
+
+  if (any(class(arg) %in% "matrix")) arg <- as.vector(arg)
+
+  check <- list()
+  message <- list()
+
+  if (!is.null(type)) {
+    check[["type"]] <- any(class(arg) %in% type) & (!is.null(class(arg)))
+    message[["type"]] <- paste("The argument type did not match:", paste(type, collapse = "/"))
+  }
+
+  if (!is.null(length)) {
+    check[["length"]] <- all(length(arg) %in% length) & (!is.null(length(arg)))
+    message[["length"]] <- paste("The argument length is not", paste(length, collapse = ", "))
+  }
+
+  if (!is.null(dim)) {
+    check[["dim"]] <- all(dim(arg) == dim) & (!is.null(dim(arg)))
+    message[["dim"]] <- paste("The argument dimension is not", paste(dim, collapse = ","))
+  }
+
+  check <- unlist(check)
+  message <- unlist(message)
+
+  if (!all(unlist(check))) {
+    stop(paste(message[!check], collapse = "\n"))
+  } else {
+    return(NULL)
+  }
+}
+
 #' A function to check the arguments `enroll_rate` used in gsDesign2
 #'
-#' @param enroll_rate Enrollment rates.
+#' @inheritParams ahr
 #'
 #' @return `TRUE` or `FALSE`.
 #'
 #' @noRd
 #'
 #' @examples
+#' # Proper definition
+#' enroll_rate <- define_enroll_rate(
+#'   duration = c(2, 2, 10),
+#'   rate = c(3, 6, 9)
+#' )
 #'
-#' enroll_rate <- tibble::tibble(stratum = "All", duration = c(2, 2, 10), rate = c(3, 6, 9))
+#' check_enroll_rate(enroll_rate)
+#'
+#' # Non-standard use
+#' enroll_rate <- data.frame(
+#'   duration = c(2, 2, 10),
+#'   rate = c(3, 6, 9)
+#' )
+#'
 #' check_enroll_rate(enroll_rate)
 check_enroll_rate <- function(enroll_rate) {
-  # --------------------------- #
-  #   check the duration column #
-  # --------------------------- #
-  if (!"duration" %in% colnames(enroll_rate)) {
-    stop("The enroll_rate is a tibble which contains a column called `duration`!")
-  }
-  # the duration is numerical values
-  if (!is.numeric(enroll_rate$duration)) {
-    stop("The `duration`column in enroll_rate should be numeric!")
+  if (!("enroll_rate" %in% class(enroll_rate))) {
+    msg <- c(
+      "Please use `define_enroll_rate()` to specify the `enroll_rate` argument.",
+      "We will enforce this requirement from the next version."
+    )
+    msg <- paste(msg, collapse = "\n")
+    warning(msg)
+
+    if (!("stratum" %in% names(enroll_rate))) {
+      enroll_rate$stratum <- rep("All", nrow(enroll_rate))
+    }
+
+    enroll_rate <- define_enroll_rate(
+      enroll_rate$duration,
+      enroll_rate$rate,
+      enroll_rate$stratum
+    )
   }
 
-  # the duration is positive numbers
-  if (sum(!enroll_rate$duration > 0) != 0) {
-    stop("The `duration` column in enroll_rate should be positive numbers!")
-  }
-
-  # --------------------------- #
-  #   check the rate column     #
-  # --------------------------- #
-  if (!"rate" %in% colnames(enroll_rate)) {
-    stop("The enroll_rate is a tibble which contains a column called `rate`!")
-  }
-
-  # the rate is numerical values
-  if (!is.numeric(enroll_rate$rate)) {
-    stop("The `rate`column in enroll_rate should be numeric!")
-  }
-
-  # the rate is positive numbers
-  if (sum(!enroll_rate$rate >= 0) != 0) {
-    stop("The `rate` column in enroll_rate should be positive numbers!")
-  }
+  enroll_rate
 }
 
 
 
 #' A function to check the arguments `fail_rate` used in gsDesign2
 #'
-#' @param fail_rate Failure rates.
+#' @inheritParams ahr
 #'
 #' @return `TRUE` or `FALSE`.
 #'
 #' @noRd
 #'
 #' @examples
-#' fail_rate <- tibble::tibble(
-#'   stratum = "All", duration = c(3, 100),
-#'   fail_rate = log(2) / c(9, 18), hr = c(.9, .6),
-#'   dropout_rate = rep(.001, 2)
+#' # Proper definition
+#' fail_rate <- define_fail_rate(
+#'   duration = c(3, 100),
+#'   fail_rate = log(2) / c(9, 18),
+#'   dropout_rate = .001,
+#'   hr = c(.9, .6)
 #' )
+#'
+#' check_fail_rate(fail_rate)
+#'
+#' # Non-standard use
+#' fail_rate <- define_fail_rate(
+#'   duration = c(3, 100),
+#'   fail_rate = log(2) / c(9, 18),
+#'   dropout_rate = .001,
+#'   hr = c(.9, .6)
+#' )
+#'
 #' check_fail_rate(fail_rate)
 check_fail_rate <- function(fail_rate) {
-  # --------------------------- #
-  #   check the duration column #
-  # --------------------------- #
-  if (!"duration" %in% colnames(fail_rate)) {
-    stop("The fail_rate is a tibble which contains a column called `duration`!")
-  }
-  # the duration is numerical values
-  if (!is.numeric(fail_rate$duration)) {
-    stop("The `duration`column in fail_rate should be numeric!")
-  }
+  if (!("fail_rate" %in% class(fail_rate))) {
+    msg <- c(
+      "Please use `define_fail_rate()` to specify the `fail_rate` argument.",
+      "We will enforce the requirement from the next version."
+    )
+    msg <- paste(msg, collapse = "\n")
+    warning(msg)
 
-  # the duration is positive numbers
-  if (sum(!fail_rate$duration > 0) != 0) {
-    stop("The `duration` column in fail_rate should be positive numbers!")
-  }
-
-  # -----------------------------#
-  #   check the fail_rate column #
-  # ---------------------------- #
-  if (!"fail_rate" %in% colnames(fail_rate)) {
-    stop("The fail_rate is a tibble which contains a column called `fail_rate`!")
-  }
-
-  # the rates are fail_rate values
-  if (!is.numeric(fail_rate$fail_rate)) {
-    stop("The `fail_rate`column in fail_rate should be numeric!")
-  }
-
-  # the rates are positive numbers
-  if (any(fail_rate$fail_rate < 0)) {
-    stop("The `fail_rate` column in fail_rate should be positive numbers!")
-  }
-
-  # at least 1 rate is positive
-  if (all(fail_rate$fail_rate <= 0)) {
-    stop("The `fail_rate` column in fail_rate should have at least one positive number!")
-  }
-
-  # --------------------------- #
-  #   check the hr column       #
-  # --------------------------- #
-  if ("hr" %in% colnames(fail_rate)) {
-    if (!is.numeric(fail_rate$hr)) {
-      stop("The `hr`column in fail_rate should be numeric!")
+    if (!("hr" %in% names(fail_rate))) {
+      fail_rate$hr <- rep(1, nrow(fail_rate))
     }
 
-    if (sum(!fail_rate$hr > 0) != 0) {
-      stop("The `hr` column in fail_rate should be positive numbers!")
+    if (!("stratum" %in% names(fail_rate))) {
+      fail_rate$stratum <- rep("All", nrow(fail_rate))
     }
+
+    fail_rate <- define_fail_rate(
+      fail_rate$duration,
+      fail_rate$fail_rate,
+      fail_rate$dropout_rate,
+      fail_rate$hr,
+      fail_rate$stratum
+    )
   }
 
-  # --------------------------- #
-  # check the dropout_rate column#
-  # --------------------------- #
-  if (!"dropout_rate" %in% colnames(fail_rate)) {
-    stop("The fail_rate is a tibble which contains a column called `dropout_rate`!")
-  }
-
-  # the rate is numerical values
-  if (!is.numeric(fail_rate$dropout_rate)) {
-    stop("The `dropout_rate`column in fail_rate should be numeric!")
-  }
-
-  # the rate is positive numbers
-  if (sum(!fail_rate$dropout_rate >= 0) != 0) {
-    stop("The `dropout_rate` column in fail_rate should be positive numbers!")
-  }
+  fail_rate
 }
 
 
 
 #' A function to check the arguments `enroll_rate` and `fail_rate` used in gsDesign2
 #'
-#' @param enroll_rate Enrollment rates.
-#' @param fail_rate Failure rates.
+#' @inheritParams ahr
 #'
 #' @return `TRUE` or `FALSE`.
 #'
 #' @noRd
 #'
 #' @examples
-#' enroll_rate <- tibble::tibble(stratum = "All", duration = c(2, 2, 10), rate = c(3, 6, 9))
-#' fail_rate <- tibble::tibble(
-#'   stratum = "All", duration = c(3, 100),
-#'   fail_rate = log(2) / c(9, 18), hr = c(.9, .6),
-#'   dropout_rate = rep(.001, 2)
+#' enroll_rate <- define_enroll_rate(duration = c(2, 2, 10), rate = c(3, 6, 9))
+#' fail_rate <- define_fail_rate(
+#'   duration = c(3, 100),
+#'   fail_rate = log(2) / c(9, 18),
+#'   dropout_rate = .001,
+#'   hr = c(.9, .6)
 #' )
 #' check_enroll_rate_fail_rate(enroll_rate, fail_rate)
 check_enroll_rate_fail_rate <- function(enroll_rate, fail_rate) {
@@ -199,7 +237,7 @@ check_enroll_rate_fail_rate <- function(enroll_rate, fail_rate) {
 check_analysis_time <- function(analysis_time) {
   cond1 <- !is.numeric(analysis_time)
   cond2 <- !is.vector(analysis_time)
-  cond3 <- min(analysis_time - dplyr::lag(analysis_time, def = 0)) <= 0
+  cond3 <- min(analysis_time - fastlag(analysis_time, first = 0)) <= 0
   if (cond1 || cond2 || cond3) {
     stop("The input argument `analysis_times` must be NULL a numeric vector with positive increasing values!")
   }
@@ -223,7 +261,7 @@ check_analysis_time <- function(analysis_time) {
 check_event <- function(event) {
   cond1 <- !is.numeric(event)
   cond2 <- !is.vector(event)
-  cond3 <- min(event - dplyr::lag(event, default = 0)) <= 0
+  cond3 <- min(event - fastlag(event, first = 0)) <= 0
   if (cond1 || cond2 || cond3) {
     stop("The input argument `event` must be NULL or a numeric vector with positive increasing values!")
   }
@@ -290,7 +328,7 @@ check_info <- function(info) {
   if (!is.vector(info, mode = "numeric")) {
     stop("gs_design_npe() or gs_power_npe(): info must be specified numeric vector!")
   }
-  if (min(info - lag(info, default = 0)) <= 0) {
+  if (min(info - fastlag(info, first = 0)) <= 0) {
     stop("gs_design_npe() or gs_power_npe(): info much be strictly increasing and positive!")
   }
 }
@@ -408,6 +446,6 @@ check_info_frac <- function(info_frac) {
   msg <- "gs_design_ahr(): info_frac must be a positive
   number or positive increasing sequence on (0, 1] with final value of 1!"
   if (!is.vector(info_frac, mode = "numeric")) stop(msg)
-  if (min(info_frac - dplyr::lag(info_frac, def = 0)) <= 0) stop(msg)
+  if (min(info_frac - fastlag(info_frac, first = 0)) <= 0) stop(msg)
   if (max(info_frac) != 1) stop(msg)
 }

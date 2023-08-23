@@ -5,15 +5,15 @@
 \title{Group sequential design of binary outcome measuring in risk difference}
 \usage{
 gs_design_rd(
-  p_c = tibble(stratum = "all", rate = 0.2),
-  p_e = tibble(stratum = "all", rate = 0.15),
+  p_c = tibble::tibble(stratum = "All", rate = 0.2),
+  p_e = tibble::tibble(stratum = "All", rate = 0.15),
   info_frac = 1:3/3,
   rd0 = 0,
   alpha = 0.025,
   beta = 0.1,
   ratio = 1,
   stratum_prev = NULL,
-  weight = c("unstratified", "ss", "invar_h1", "invar_h0"),
+  weight = c("unstratified", "ss", "invar"),
   upper = gs_b,
   lower = gs_b,
   upar = gsDesign(k = 3, test.type = 1, sfu = sfLDOF, sfupar = NULL)$upper$bound,
@@ -24,7 +24,7 @@ gs_design_rd(
   binding = FALSE,
   r = 18,
   tol = 1e-06,
-  h1_spending = FALSE
+  h1_spending = TRUE
 )
 }
 \arguments{
@@ -98,7 +98,6 @@ Group sequential design of binary outcome measuring in risk difference
 To be added.
 }
 \examples{
-library(tibble)
 library(gsDesign)
 
 # ----------------- #
@@ -106,8 +105,8 @@ library(gsDesign)
 #------------------ #
 # unstratified group sequential design
 gs_design_rd(
-  p_c = tibble(stratum = "All", rate = .2),
-  p_e = tibble(stratum = "All", rate = .15),
+  p_c = tibble::tibble(stratum = "All", rate = .2),
+  p_e = tibble::tibble(stratum = "All", rate = .15),
   info_frac = c(0.7, 1),
   rd0 = 0,
   alpha = .025,
@@ -126,11 +125,11 @@ gs_design_rd(
 # ----------------- #
 # stratified group sequential design
 gs_design_rd(
-  p_c = tibble(
+  p_c = tibble::tibble(
     stratum = c("biomarker positive", "biomarker negative"),
     rate = c(.2, .25)
   ),
-  p_e = tibble(
+  p_e = tibble::tibble(
     stratum = c("biomarker positive", "biomarker negative"),
     rate = c(.15, .22)
   ),
@@ -139,7 +138,7 @@ gs_design_rd(
   alpha = .025,
   beta = .1,
   ratio = 1,
-  stratum_prev = tibble(
+  stratum_prev = tibble::tibble(
     stratum = c("biomarker positive", "biomarker negative"),
     prevalence = c(.4, .6)
   ),

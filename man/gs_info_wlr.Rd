@@ -5,10 +5,9 @@
 \title{Information and effect size for weighted log-rank test}
 \usage{
 gs_info_wlr(
-  enroll_rate = tibble::tibble(stratum = "All", duration = c(2, 2, 10), rate = c(3, 6,
-    9)),
-  fail_rate = tibble::tibble(stratum = "All", duration = c(3, 100), fail_rate =
-    log(2)/c(9, 18), hr = c(0.9, 0.6), dropout_rate = rep(0.001, 2)),
+  enroll_rate = define_enroll_rate(duration = c(2, 2, 10), rate = c(3, 6, 9)),
+  fail_rate = define_fail_rate(duration = c(3, 100), fail_rate = log(2)/c(9, 18), hr =
+    c(0.9, 0.6), dropout_rate = 0.001),
   ratio = 1,
   event = NULL,
   analysis_time = NULL,
@@ -18,7 +17,8 @@ gs_info_wlr(
 )
 }
 \arguments{
-\item{enroll_rate}{Enrollment rates.}
+\item{enroll_rate}{An \code{enroll_rate} data frame with or without stratum
+created by \code{\link[=define_enroll_rate]{define_enroll_rate()}}.}
 
 \item{fail_rate}{Failure and dropout rates.}
 
@@ -63,15 +63,13 @@ The \code{\link[=expected_time]{expected_time()}} function is used to get events
 targeted \code{analysis_time}.
 }
 \examples{
-library(tibble)
 library(gsDesign2)
 
 # Set enrollment rates
-enroll_rate <- tibble(stratum = "All", duration = 12, rate = 500 / 12)
+enroll_rate <- define_enroll_rate(duration = 12, rate = 500 / 12)
 
 # Set failure rates
-fail_rate <- tibble(
-  stratum = "All",
+fail_rate <- define_fail_rate(
   duration = c(4, 100),
   fail_rate = log(2) / 15, # median survival 15 month
   hr = c(1, .6),

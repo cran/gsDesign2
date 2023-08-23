@@ -18,8 +18,7 @@
 
 #' Summary for fixed design or group sequential design objects
 #'
-#' @param object A design object returned by [fixed_design()],
-#'   [gs_design_ahr()], [gs_design_wlr()], or [gs_design_combo()].
+#' @param object A design object returned by fixed_design_xxx() and gs_design_xxx().
 #' @param ... Additional parameters (not used).
 #'
 #' @return A summary table (data frame).
@@ -32,15 +31,13 @@
 #' library(dplyr)
 #'
 #' # Enrollment rate
-#' enroll_rate <- tibble::tibble(
-#'   stratum = "All",
+#' enroll_rate <- define_enroll_rate(
 #'   duration = 18,
 #'   rate = 20
 #' )
 #'
 #' # Failure rates
-#' fail_rate <- tibble::tibble(
-#'   stratum = "All",
+#' fail_rate <- define_fail_rate(
 #'   duration = c(4, 100),
 #'   fail_rate = log(2) / 12,
 #'   hr = c(1, .6),
@@ -62,8 +59,7 @@
 #' #        AHR                #
 #' # ------------------------- #
 #' # under fixed power
-#' fixed_design(
-#'   "ahr",
+#' fixed_design_ahr(
 #'   alpha = alpha,
 #'   power = 1 - beta,
 #'   enroll_rate = enroll_rate,
@@ -76,8 +72,7 @@
 #' #        FH                 #
 #' # ------------------------- #
 #' # under fixed power
-#' fixed_design(
-#'   "fh",
+#' fixed_design_fh(
 #'   alpha = alpha,
 #'   power = 1 - beta,
 #'   enroll_rate = enroll_rate,
@@ -168,19 +163,18 @@ summary.fixed_design <- function(object, ...) {
 #' # ---------------------------- #
 #' #     design parameters        #
 #' # ---------------------------- #
-#' library(tibble)
 #' library(gsDesign)
 #' library(gsDesign2)
 #' library(dplyr)
 #'
 #' # enrollment/failure rates
-#' enroll_rate <- tibble(
+#' enroll_rate <- define_enroll_rate(
 #'   stratum = "All",
 #'   duration = 12,
 #'   rate = 1
 #' )
-#' fail_rate <- tibble(
-#'   stratum = "All", duration = c(4, 100),
+#' fail_rate <- define_fail_rate(
+#'   duration = c(4, 100),
 #'   fail_rate = log(2) / 12,
 #'   hr = c(1, .6),
 #'   dropout_rate = .001
@@ -273,9 +267,10 @@ summary.fixed_design <- function(object, ...) {
 #'   ratio = 1,
 #'   alpha = 0.025,
 #'   beta = 0.2,
-#'   enroll_rate = tibble::tibble(stratum = "All", duration = 12, rate = 500 / 12),
+#'   enroll_rate = define_enroll_rate(duration = 12, rate = 500 / 12),
 #'   fail_rate = tibble::tibble(
-#'     stratum = "All", duration = c(4, 100),
+#'     stratum = "All",
+#'     duration = c(4, 100),
 #'     fail_rate = log(2) / 15, hr = c(1, .6), dropout_rate = .001
 #'   ),
 #'   fh_test = fh_test,
@@ -291,8 +286,8 @@ summary.fixed_design <- function(object, ...) {
 #' # ---------------------------- #
 #' \donttest{
 #' gs_design_rd(
-#'   p_c = tibble(stratum = "All", rate = .2),
-#'   p_e = tibble(stratum = "All", rate = .15),
+#'   p_c = tibble::tibble(stratum = "All", rate = .2),
+#'   p_e = tibble::tibble(stratum = "All", rate = .15),
 #'   info_frac = c(0.7, 1),
 #'   rd0 = 0,
 #'   alpha = .025,

@@ -28,7 +28,6 @@
 #' @return A list with input parameters, enrollment rate, analysis, and bound.
 #'
 #' @importFrom mvtnorm GenzBretz
-#' @importFrom tibble tibble
 #'
 #' @export
 #'
@@ -37,16 +36,13 @@
 #' library(dplyr)
 #' library(mvtnorm)
 #' library(gsDesign)
-#' library(tibble)
 #'
-#' enroll_rate <- tibble(
-#'   stratum = "All",
+#' enroll_rate <- define_enroll_rate(
 #'   duration = 12,
 #'   rate = 500 / 12
 #' )
 #'
-#' fail_rate <- tibble(
-#'   stratum = "All",
+#' fail_rate <- define_fail_rate(
 #'   duration = c(4, 100),
 #'   fail_rate = log(2) / 15, # median survival 15 month
 #'   hr = c(1, .6),
@@ -90,7 +86,7 @@
 #' # -------------------------#
 #' #       example 1          #
 #' # ------------------------ #
-#' # User defined boundary
+#' # User-defined boundary
 #' \donttest{
 #' gs_design_combo(
 #'   enroll_rate,
@@ -122,41 +118,40 @@
 #'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.2), # beta spending
 #' )
 #' }
-gs_design_combo <- function(enroll_rate = tibble(
-                              stratum = "All",
-                              duration = 12,
-                              rate = 500 / 12
-                            ),
-                            fail_rate = tibble(
-                              stratum = "All",
-                              duration = c(4, 100),
-                              fail_rate = log(2) / 15,
-                              hr = c(1, .6),
-                              dropout_rate = 0.001
-                            ),
-                            fh_test = rbind(
-                              data.frame(
-                                rho = 0, gamma = 0, tau = -1,
-                                test = 1, analysis = 1:3,
-                                analysis_time = c(12, 24, 36)
-                              ),
-                              data.frame(
-                                rho = c(0, 0.5), gamma = 0.5, tau = -1,
-                                test = 2:3, analysis = 3,
-                                analysis_time = 36
-                              )
-                            ),
-                            ratio = 1,
-                            alpha = 0.025,
-                            beta = 0.2,
-                            binding = FALSE,
-                            upper = gs_b,
-                            upar = c(3, 2, 1),
-                            lower = gs_b,
-                            lpar = c(-1, 0, 1),
-                            algorithm = mvtnorm::GenzBretz(maxpts = 1e5, abseps = 1e-5),
-                            n_upper_bound = 1e3,
-                            ...) {
+gs_design_combo <- function(
+    enroll_rate = define_enroll_rate(
+      duration = 12,
+      rate = 500 / 12
+    ),
+    fail_rate = define_fail_rate(
+      duration = c(4, 100),
+      fail_rate = log(2) / 15,
+      hr = c(1, .6),
+      dropout_rate = 0.001
+    ),
+    fh_test = rbind(
+      data.frame(
+        rho = 0, gamma = 0, tau = -1,
+        test = 1, analysis = 1:3,
+        analysis_time = c(12, 24, 36)
+      ),
+      data.frame(
+        rho = c(0, 0.5), gamma = 0.5, tau = -1,
+        test = 2:3, analysis = 3,
+        analysis_time = 36
+      )
+    ),
+    ratio = 1,
+    alpha = 0.025,
+    beta = 0.2,
+    binding = FALSE,
+    upper = gs_b,
+    upar = c(3, 2, 1),
+    lower = gs_b,
+    lpar = c(-1, 0, 1),
+    algorithm = mvtnorm::GenzBretz(maxpts = 1e5, abseps = 1e-5),
+    n_upper_bound = 1e3,
+    ...) {
   # get the number of analysis/test
   n_analysis <- length(unique(fh_test$analysis))
   n_test <- max(fh_test$test)
@@ -192,7 +187,7 @@ gs_design_combo <- function(enroll_rate = tibble(
   }
 
   # Function to calculate power
-  foo <- function(n, beta, ...) {
+  get_combo_power <- function(n, beta, ...) {
     # Probability Cross Boundary
     prob <- gs_prob_combo(
       upper_bound = bound$upper,
@@ -227,7 +222,7 @@ gs_design_combo <- function(enroll_rate = tibble(
     )
 
 
-    sample_size <- uniroot(foo, c(1, n_upper_bound), extendInt = "yes", beta = beta, ...)$root
+    sample_size <- uniroot(get_combo_power, c(1, n_upper_bound), extendInt = "yes", beta = beta, ...)$root
   }
 
   # Probability Cross Boundary
