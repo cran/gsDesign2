@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -32,17 +32,17 @@
 #' @inheritParams ahr
 #' @param total_duration Total follow-up from start of enrollment to data cutoff.
 #' @param simple If default (`TRUE`), return numeric expected number of events,
-#'   otherwise a tibble as described below.
+#'   otherwise a data frame as described below.
 #'
 #' @return The default when `simple = TRUE` is to return the total expected
 #'   number of events as a real number.
-#'   Otherwise, when `simple = FALSE`, a tibble is returned with
+#'   Otherwise, when `simple = FALSE`, a data frame is returned with
 #'   the following variables for each period specified in `fail_rate`:
 #'   - `t`: start of period.
 #'   - `fail_rate`: failure rate during the period.
 #'   - `event`: expected events during the period.
 #'
-#'   The records in the returned tibble correspond to the input tibble `fail_rate`.
+#'   The records in the returned data frame correspond to the input data frame `fail_rate`.
 #'
 #' @section Specification:
 #' \if{latex}{
@@ -54,13 +54,13 @@
 #'    \item Validate if input failure rate contains dropout rate column.
 #'    \item Validate if input trial total follow-up (total duration) is a non-empty vector of positive integers.
 #'    \item Validate if input simple is logical.
-#'    \item Define a tibble with the start opening for enrollment at zero and cumulative duration.
+#'    \item Define a data frame with the start opening for enrollment at zero and cumulative duration.
 #'    Add the event (or failure) time corresponding to the start of the enrollment.
-#'    Finally, add the enrollment rate to the tibble
+#'    Finally, add the enrollment rate to the data frame
 #'    corresponding to the start and end (failure) time.
 #'    This will be recursively used to calculate the expected
 #'    number of events later. For details, see vignette/eEventsTheory.Rmd
-#'    \item Define a tibble including the cumulative duration of failure rates, the corresponding start time of
+#'    \item Define a data frame including the cumulative duration of failure rates, the corresponding start time of
 #'    the enrollment, failure rate and dropout rates.  For details, see vignette/eEventsTheory.Rmd
 #'    \item Only consider the failure rates in the interval of the end failure rate and total duration.
 #'    \item Compute the failure rates over time using \code{stepfun} which is used
@@ -119,9 +119,7 @@ expected_event <- function(
     ),
     total_duration = 25,
     simple = TRUE) {
-  # ----------------------------#
-  #    check input values       #
-  # ----------------------------#
+  # Check input values ----
   check_enroll_rate(enroll_rate)
   check_fail_rate(fail_rate)
   check_enroll_rate_fail_rate(enroll_rate, fail_rate)
@@ -134,10 +132,8 @@ expected_event <- function(
     stop("gsDesign2: simple in `expected_event()` must be logical!")
   }
 
-  # ----------------------------#
-  #    divide the time line     #
-  #     into sub-intervals      #
-  # ----------------------------#
+  # Divide the time line into sub-intervals ----
+
   ## by piecewise enrollment rates
   df_1 <- data.frame(start_enroll = c(0, cumsum(enroll_rate$duration)))
   df_1$end_fail <- total_duration - df_1$start_enroll
@@ -158,9 +154,7 @@ expected_event <- function(
     df_2 <- df_2[df_2$start_enroll > 0, ]
   }
 
-  # ----------------------------#
-  # create 3 step functions (sf)#
-  # ----------------------------#
+  # Create 3 step functions (sf) ----
   # Step function to define enrollment rates over time
   sf_enroll_rate <- stats::stepfun(c(0, cumsum(enroll_rate$duration)),
     c(0, enroll_rate$rate, 0),
@@ -216,9 +210,7 @@ expected_event <- function(
         (df$duration - (1 - df$q) / (df$fail_rate_var + df$dropout_rate_var))
   )
 
-  # ----------------------------#
-  #       output results        #
-  # ----------------------------#
+  # Output results ----
   if (simple) {
     ans <- as.numeric(sum(df$nbar))
   } else {
@@ -242,8 +234,7 @@ expected_event <- function(
     ans <- do.call(rbind, ans)
     ans$t <- ans$start_fail
     ans <- ans[, c("t", "fail_rate", "event")]
-    ans <- tibble::new_tibble(ans)
-    tibble::validate_tibble(ans)
+    row.names(ans) <- seq_len(nrow(ans))
   }
   return(ans)
 }

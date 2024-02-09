@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -19,7 +19,7 @@
 #' One-to-many table merge for presentation
 #'
 #' A table is desired based on a one-to-many mapping.
-#' The data frame in `table_a` maps into `table_b` with the by variable `by_a`
+#' The data frame in `table_a` maps into `table_b` with the by variable `byvar`
 #' Examples show how to use with the gt package for printing a compact combined table.
 #'
 #' @param table_a A data frame with one record for each value of `byvar`.
@@ -33,7 +33,6 @@
 #'   The columns of `table_b` are also included. This is intended for use with `gt()` grouping by
 #'   rows in a.
 #'
-#' @importFrom rlang :=
 #' @importFrom dplyr all_of one_of
 #'
 #' @noRd
@@ -79,9 +78,11 @@ table_ab <- function(table_a, table_b, byvar, decimals = 1, aname = names(table_
   # Bind this together with the byvar column
   astring <- cbind(table_a %>% select(all_of(byvar)), astring)
   # Now merge with table_b
-  ab <- left_join(astring, table_b, by = byvar) %>%
-    select(-one_of(!!byvar)) %>%
-    dplyr::rename(!!aname := !!"_alab")
+  ab <- left_join(astring, table_b, by = byvar)
+  # Remove column used for grouping
+  ab[[byvar]] <- NULL
+  # Use the new column name from the argument `aname`
+  colnames(ab)[grep("_alab", colnames(ab))] <- aname
   return(ab)
 }
 

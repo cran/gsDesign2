@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -18,7 +18,18 @@
 
 #' Define enrollment rate
 #'
-#' @param duration A numeric vector of piecewise study duration interval.
+#' Define the enrollment rate of subjects for a study as following a piecewise
+#' exponential distribution.
+#'
+#' @details
+#' The `duration` are ordered piecewise for a duration equal to
+#' \eqn{t_i - t_{i-1}}, where \eqn{0 = t_0 < t_i < \cdots < t_M = \infty}.
+#' The enrollment rates are defined in each duration with the same length.
+#'
+#' For a study with multiple strata, different duration and rates can be
+#' specified in each stratum.
+#'
+#' @param duration A numeric vector of ordered piecewise study duration interval.
 #' @param rate A numeric vector of enrollment rate in each `duration`.
 #' @param stratum A character vector of stratum name.
 #'
@@ -35,51 +46,48 @@
 #'
 #' # Define enroll rate with stratum
 #' define_enroll_rate(
-#'   stratum = c("low", "low", "high"),
-#'   duration = c(2, 2, 10),
-#'   rate = c(3, 6, 9)
+#'   duration = rep(c(2, 2, 2, 18), 3),
+#'   rate = c((1:4) / 3, (1:4) / 2, (1:4) / 6),
+#'   stratum = c(array("High", 4), array("Moderate", 4), array("Low", 4))
 #' )
 define_enroll_rate <- function(
     duration,
     rate,
     stratum = "All") {
-  if (is.null(duration)) {
-    stop("define_enroll_rate: variable `duration` can't be NULL.")
-  }
-
-  if (is.null(rate)) {
-    stop("define_enroll_rate: variable `rate` can't be NULL.")
-  }
-
-  check_args(duration, type = c("numeric", "integer"))
-  check_args(rate, type = c("numeric", "integer"))
-  check_args(stratum, type = c("character"))
-
-  if (any(duration < 0)) {
-    stop("define_enroll_rate: enrollment duration `duration` can't be negative.")
-  }
-
-  if (any(rate < 0)) {
-    stop("define_enroll_rate: enrollment rate `rate` can't be negative.")
-  }
-
   df <- tibble::tibble(
     stratum = stratum,
     duration = duration,
     rate = rate
   )
 
+  check_enroll_rate(df)
+
   class(df) <- c("enroll_rate", class(df))
 
   df
 }
 
-#' Define fail rate
+#' Define failure rate
 #'
-#' @param duration A numeric vector of piecewise study duration interval.
-#' @param fail_rate A numeric vector of failure rate in each `duration`.
+#' Define subject failure rate for a study with two treatment groups.
+#' Also supports stratified designs that have different failure rates in
+#' each stratum.
+#'
+#' @details
+#' Define the failure and dropout rate of subjects for a study as following
+#' a piecewise exponential distribution.
+#' The `duration` are ordered piecewise for a duration equal to
+#' \eqn{t_i - t_{i-1}}, where \eqn{0 = t_0 < t_i < \cdots < t_M = \infty}.
+#' The failure rate, dropout rate, and hazard ratio in a study duration
+#' can be specified.
+#'
+#' For a study with multiple strata, different duration, failure rates,
+#' dropout rates, and hazard ratios can be specified in each stratum.
+#'
+#' @param duration A numeric vector of ordered piecewise study duration interval.
+#' @param fail_rate A numeric vector of failure rate in each `duration` in the control group.
 #' @param dropout_rate A numeric vector of dropout rate in each `duration`.
-#' @param hr A numeric vector of hazard ratio.
+#' @param hr A numeric vector of hazard ratio between treatment and control group.
 #' @param stratum A character vector of stratum name.
 #'
 #' @return A `fail_rate` data frame.
@@ -87,7 +95,7 @@ define_enroll_rate <- function(
 #' @export
 #'
 #' @examples
-#' # Define enroll rate without stratum
+#' # Define enroll rate
 #' define_fail_rate(
 #'   duration = c(3, 100),
 #'   fail_rate = log(2) / c(9, 18),
@@ -97,11 +105,11 @@ define_enroll_rate <- function(
 #'
 #' # Define enroll rate with stratum
 #' define_fail_rate(
-#'   duration = c(3, 100),
-#'   fail_rate = log(2) / c(9, 18),
-#'   hr = c(.9, .6),
+#'   stratum = c(rep("Low", 2), rep("High", 2)),
+#'   duration = 1,
+#'   fail_rate = c(.1, .2, .3, .4),
 #'   dropout_rate = .001,
-#'   stratum = c("low", "high")
+#'   hr = c(.9, .75, .8, .6)
 #' )
 define_fail_rate <- function(
     duration,
@@ -109,40 +117,6 @@ define_fail_rate <- function(
     dropout_rate,
     hr = 1,
     stratum = "All") {
-  if (is.null(duration)) {
-    stop("define_enroll_rate: variable `duration` can't be NULL.")
-  }
-
-  if (is.null(fail_rate)) {
-    stop("define_enroll_rate: variable `fail_rate` can't be NULL.")
-  }
-
-  if (is.null(dropout_rate)) {
-    stop("define_enroll_rate: variable `dropout_rate` can't be NULL.")
-  }
-
-  check_args(duration, type = c("numeric", "integer"))
-  check_args(fail_rate, type = c("numeric", "integer"))
-  check_args(dropout_rate, type = c("numeric", "integer"))
-  check_args(hr, type = c("numeric", "integer"))
-  check_args(stratum, type = c("character"))
-
-  if (any(duration < 0)) {
-    stop("define_fail_rate: enrollment duration `duration` can't be negative.")
-  }
-
-  if (any(fail_rate < 0)) {
-    stop("define_fail_rate: failure rate `fail_rate` can't be negative.")
-  }
-
-  if (any(dropout_rate < 0)) {
-    stop("define_fail_rate: failure rate `fail_rate` can't be negative.")
-  }
-
-  if (any(hr < 0)) {
-    stop("define_fail_rate: hazard ratio `hr` can't be negative.")
-  }
-
   df <- tibble::tibble(
     stratum = stratum,
     duration = duration,
@@ -150,6 +124,8 @@ define_fail_rate <- function(
     dropout_rate = dropout_rate,
     hr = hr
   )
+
+  check_fail_rate(df)
 
   class(df) <- c("fail_rate", class(df))
 

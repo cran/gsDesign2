@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -360,7 +360,8 @@ gs_prob_combo <- function(upper_bound,
       upper,
       group = analysis[k_ind],
       mean = theta[k_ind],
-      corr = corr[k_ind, k_ind]
+      corr = corr[k_ind, k_ind],
+      ...
     )
 
     # Futility Bound
@@ -376,7 +377,8 @@ gs_prob_combo <- function(upper_bound,
       upper,
       group = analysis[k_ind],
       mean  = theta[k_ind],
-      corr  = corr[k_ind, k_ind]
+      corr  = corr[k_ind, k_ind],
+      ...
     )
   }
 
