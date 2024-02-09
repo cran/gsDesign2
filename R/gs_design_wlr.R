@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -57,9 +57,7 @@
 #'   dropout_rate = 0.001
 #' )
 #'
-#' # -------------------------#
-#' #       example 1          #
-#' # ------------------------ #
+#' # Example 1 ----
 #' # Boundary is fixed
 #' x <- gsSurv(
 #'   k = 3,
@@ -91,9 +89,7 @@
 #'   analysis_time = c(12, 24, 36)
 #' )
 #'
-#' # -------------------------#
-#' #       example 2          #
-#' # ------------------------ #
+#' # Example 2 ----
 #' # Boundary derived by spending function
 #' gs_design_wlr(
 #'   enroll_rate = enroll_rate,
@@ -137,9 +133,7 @@ gs_design_wlr <- function(
     h1_spending = TRUE,
     r = 18, tol = 1e-6,
     interval = c(.01, 100)) {
-  # --------------------------------------------- #
-  #     check input values                        #
-  # --------------------------------------------- #
+  # Check input values ----
   msg <- "gs_design_wlr(): analysis_time must be a
   positive number or positive increasing sequence"
   if (!is.vector(analysis_time, mode = "numeric")) stop(msg)
@@ -152,12 +146,13 @@ gs_design_wlr <- function(
   if (max(info_frac) != 1) stop(msg)
   msg <- "gs_design_wlr(): info_frac and analysis_time must have the same length if both have length > 1"
   if ((length(analysis_time) > 1) && (length(info_frac) > 1) && (length(info_frac) != length(analysis_time))) stop(msg)
+  if (all(fail_rate$hr == 1)) {
+    stop("gs_design_wlr() hr must not be equal to 1 throughout the study as this is the null hypothesis.")
+  }
   # get the info_scale
   info_scale <- match.arg(info_scale)
 
-  # --------------------------------------------- #
-  #     get information at input analysis_time    #
-  # --------------------------------------------- #
+  # Get information at input analysis_time ----
   y <- gs_info_wlr(enroll_rate, fail_rate,
     ratio = ratio, event = NULL,
     analysis_time = analysis_time, weight = weight, approx = approx,
@@ -208,9 +203,7 @@ gs_design_wlr <- function(
     info1 <- y$info0
   }
 
-  # --------------------------------------------- #
-  #     combine all the calculations              #
-  # --------------------------------------------- #
+  # Combine all the calculations ----
   suppressMessages(
     allout <- gs_design_npe(
       theta = y$theta, theta1 = theta1,
@@ -244,9 +237,7 @@ gs_design_wlr <- function(
     "nominal p" = pnorm(-z)
   )
 
-  # --------------------------------------------- #
-  #     return the output                         #
-  # --------------------------------------------- #
+  # Return the output ----
   # bounds table
   bounds <- allout %>%
     select(all_of(c("analysis", "bound", "probability", "probability0", "z", "~hr at bound", "nominal p"))) %>%

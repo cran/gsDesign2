@@ -29,7 +29,7 @@ gs_info_ahr(
 expected event count is equal to targeted event.}
 }
 \value{
-A tibble with columns Analysis, Time, AHR, Events, theta, info, info0.
+A data frame with columns Analysis, Time, AHR, Events, theta, info, info0.
 \code{info}, and \code{info0} contain statistical information under H1, H0, respectively.
 For analysis \code{k}, \code{Time[k]} is the maximum of \code{analysis_time[k]} and the
 expected time required to accrue the targeted \code{event[k]}.
@@ -56,7 +56,7 @@ average HR at targeted \code{analysis_time}.
      \item If analysis_time is specified, calculate average hazard ratio using \code{AHR()}.
      \item If event is specified, calculate average hazard ratio using \code{expected_time()}.
    }
-   \item Return a tibble of Analysis, Time, AHR, Events, theta, info, info0.
+   \item Return a data frame of Analysis, Time, AHR, Events, theta, info, info0.
   }
 }
 \if{html}{The contents of this section are shown in PDF user manual only.}
@@ -66,23 +66,17 @@ average HR at targeted \code{analysis_time}.
 library(gsDesign)
 library(gsDesign2)
 
-# ------------------------ #
-#       Example 1          #
-# ------------------------ #
+# Example 1 ----
 \donttest{
 # Only put in targeted events
 gs_info_ahr(event = c(30, 40, 50))
 }
-# ------------------------ #
-#       Example 2          #
-# ------------------------ #
+# Example 2 ----
 
 # Only put in targeted analysis times
 gs_info_ahr(analysis_time = c(18, 27, 36))
 
-# ------------------------ #
-#       Example 3          #
-# ------------------------ #
+# Example 3 ----
 \donttest{
 # Some analysis times after time at which targeted event accrue
 # Check that both Time >= input analysis_time and event >= input event

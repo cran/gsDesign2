@@ -1,5 +1,3 @@
-library(dplyr)
-
 source_files <- list.files("./old_function/", "*.R$")
 sapply(paste0("./old_function/", source_files), source)
 
@@ -16,8 +14,8 @@ test_that("expected event vs gsDesign", {
     T = total_duration
   )$d
   x2 <- eEvents_df_( # gsDesign2 old version
-    enrollRates = enroll_rate %>% rename(Stratum = stratum),
-    failRates = fail_rate %>% rename(Stratum = stratum, failRate = fail_rate, dropoutRate = dropout_rate),
+    enrollRates = enroll_rate %>% dplyr::rename(Stratum = stratum),
+    failRates = fail_rate %>% dplyr::rename(Stratum = stratum, failRate = fail_rate, dropoutRate = dropout_rate),
     total_duration,
     simple = TRUE
   )
@@ -31,8 +29,8 @@ test_that("expected event vs gsDesign", {
 
 test_that("expected_event returns consistent results (regression tests)", {
   # Note: all expected outputs were computed on 2023-08-11 with gsDesign2
-  # version 1.0.9 (installed from CRAN). This required using `tibble::tibble()`
-  # instead of the newer `define_enroll_rate()` and `define_fail_rate()`
+  # version 1.0.9 (installed from CRAN). The newer `define_enroll_rate()` and
+  # `define_fail_rate()` were not available in this older version
 
   # Default arguments, simple output (total event count only)
   observed <- expected_event()
@@ -41,7 +39,7 @@ test_that("expected_event returns consistent results (regression tests)", {
 
   # Event count by time period
   observed <- expected_event(simple = FALSE)
-  expected <- tibble::tibble(
+  expected <- data.frame(
     t = c(0, 3),
     fail_rate = c(0.0770163533955495, 0.0385081766977747),
     event = c(22.2482399817186, 35.1054633965849)
@@ -60,7 +58,7 @@ test_that("expected_event returns consistent results (regression tests)", {
     total_duration = 22,
     simple = FALSE
   )
-  expected <- tibble::tibble(
+  expected <- data.frame(
     t = 0,
     fail_rate = 0.115524530093324,
     event = 80.4097370913342
@@ -73,7 +71,7 @@ test_that("expected_event returns consistent results (regression tests)", {
     fail_rate = define_fail_rate(duration = 100, fail_rate = log(2) / 6, dropout_rate = .01),
     total_duration = 22, simple = FALSE
   )
-  expected <- tibble::tibble(
+  expected <- data.frame(
     t = 0,
     fail_rate = 0.115524530093324,
     event = 118.848383110223
@@ -87,7 +85,7 @@ test_that("expected_event returns consistent results (regression tests)", {
     total_duration = 12,
     simple = FALSE
   )
-  expected <- tibble::tibble(
+  expected <- data.frame(
     t = c(0, 1, 2),
     fail_rate = c(0.05, 0.02, 0.01),
     event = c(2.91177332078756, 1.11333393252082, 3.45481304353542)

@@ -1,4 +1,4 @@
-## ---- include=FALSE-----------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -11,7 +11,7 @@ knitr::opts_chunk$set(
   out.width = "80%"
 )
 
-## ---- message=FALSE, warning=FALSE--------------------------------------------
+## ----message=FALSE, warning=FALSE---------------------------------------------
 library(gsDesign)
 library(gsDesign2)
 library(knitr)
@@ -58,7 +58,7 @@ d %>%
 ## -----------------------------------------------------------------------------
 d$enroll_rate %>% gt()
 
-## ---- echo=FALSE--------------------------------------------------------------
+## ----echo=FALSE---------------------------------------------------------------
 ggplot(
   data = tibble(t = (0:50) / 50, `f(t)` = 2 - 2 * pnorm(qnorm(1 - .0125) / sqrt(t))),
   aes(x = t, y = `f(t)`)
@@ -86,7 +86,7 @@ design1s %>%
     subtitle = "Lan-DeMets spending to approximate O'Brien-Fleming bound"
   )
 
-## ---- class.source = 'fold-show'----------------------------------------------
+## ----class.source = 'fold-show'-----------------------------------------------
 x <- gsDesign(k = 3, test.type = 1, timing = design1s$analysis$info_frac, sfu = sfLDOF)
 cat(
   "gsDesign\n  Upper bound: ", x$upper$bound,
@@ -112,7 +112,7 @@ design2ss <- gs_design_ahr(
   h1_spending = FALSE # This specifies futility testing with spending under NULL
 )
 
-## ---- message=FALSE-----------------------------------------------------------
+## ----message=FALSE------------------------------------------------------------
 design2ss %>%
   summary() %>%
   as_gt(

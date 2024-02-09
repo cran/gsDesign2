@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -102,13 +102,13 @@ to_integer.fixed_design <- function(x, sample_size = TRUE, ...) {
     )
 
     analysis <- tibble::tibble(
-      Design = "ahr",
-      N = x_new$analysis$n,
-      Events = x_new$analysis$event,
-      Time = x_new$analysis$time,
-      Bound = (x_new$bound %>% filter(bound == "upper"))$z,
+      design = "ahr",
+      n = x_new$analysis$n,
+      event = x_new$analysis$event,
+      time = x_new$analysis$time,
+      bound = (x_new$bound %>% filter(bound == "upper"))$z,
       alpha = x$input$alpha,
-      Power = (x_new$bound %>% filter(bound == "upper"))$probability
+      power = (x_new$bound %>% filter(bound == "upper"))$probability
     )
 
     ans <- list(
@@ -134,13 +134,13 @@ to_integer.fixed_design <- function(x, sample_size = TRUE, ...) {
     )
 
     analysis <- tibble::tibble(
-      Design = "fh",
-      N = x_new$analysis$n,
-      Events = x_new$analysis$event,
-      Time = x_new$analysis$time,
-      Bound = (x_new$bound %>% filter(bound == "upper"))$z,
+      design = "fh",
+      n = x_new$analysis$n,
+      event = x_new$analysis$event,
+      time = x_new$analysis$time,
+      bound = (x_new$bound %>% filter(bound == "upper"))$z,
       alpha = x$input$alpha,
-      Power = (x_new$bound %>% filter(bound == "upper"))$probability
+      power = (x_new$bound %>% filter(bound == "upper"))$probability
     )
 
     ans <- list(
@@ -166,13 +166,13 @@ to_integer.fixed_design <- function(x, sample_size = TRUE, ...) {
     )
 
     analysis <- tibble::tibble(
-      Design = "mb",
-      N = x_new$analysis$n,
-      Events = x_new$analysis$event,
-      Time = x_new$analysis$time,
-      Bound = (x_new$bound %>% filter(bound == "upper"))$z,
+      design = "mb",
+      n = x_new$analysis$n,
+      event = x_new$analysis$event,
+      time = x_new$analysis$time,
+      bound = (x_new$bound %>% filter(bound == "upper"))$z,
       alpha = x$input$alpha,
-      Power = (x_new$bound %>% filter(bound == "upper"))$probability
+      power = (x_new$bound %>% filter(bound == "upper"))$probability
     )
 
     ans <- list(
@@ -206,7 +206,11 @@ to_integer.gs_design <- function(x, sample_size = TRUE, ...) {
 
   if ("ahr" %in% class(x)) {
     event <- x$analysis$event
-    event_new <- c(floor(event[1:(n_analysis - 1)]), ceiling(event[n_analysis])) %>% as.integer()
+    if (n_analysis == 1) {
+      event_new <- ceiling(event) %>% as.integer()
+    } else {
+      event_new <- c(floor(event[1:(n_analysis - 1)]), ceiling(event[n_analysis])) %>% as.integer()
+    }
 
     sample_size_new <- (ceiling(x$analysis$n[n_analysis] / multiply_factor) * multiply_factor) %>% as.integer()
 
@@ -236,7 +240,11 @@ to_integer.gs_design <- function(x, sample_size = TRUE, ...) {
     )
   } else if ("wlr" %in% class(x)) {
     event <- x$analysis$event
-    event_new <- c(floor(event[1:(n_analysis - 1)]), ceiling(event[n_analysis])) %>% as.integer()
+    if (n_analysis == 1) {
+      event_new <- ceiling(event) %>% as.integer()
+    } else {
+      event_new <- c(floor(event[1:(n_analysis - 1)]), ceiling(event[n_analysis])) %>% as.integer()
+    }
 
     sample_size_new <- (ceiling(x$analysis$n[n_analysis] / multiply_factor) * multiply_factor) %>% as.integer()
 

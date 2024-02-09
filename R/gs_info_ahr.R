@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -29,7 +29,7 @@
 #' @param interval An interval that is presumed to include the time at which
 #'   expected event count is equal to targeted event.
 #'
-#' @return A tibble with columns Analysis, Time, AHR, Events, theta, info, info0.
+#' @return A data frame with columns Analysis, Time, AHR, Events, theta, info, info0.
 #'   `info`, and `info0` contain statistical information under H1, H0, respectively.
 #'   For analysis `k`, `Time[k]` is the maximum of `analysis_time[k]` and the
 #'   expected time required to accrue the targeted `event[k]`.
@@ -46,7 +46,7 @@
 #'      \item If analysis_time is specified, calculate average hazard ratio using \code{AHR()}.
 #'      \item If event is specified, calculate average hazard ratio using \code{expected_time()}.
 #'    }
-#'    \item Return a tibble of Analysis, Time, AHR, Events, theta, info, info0.
+#'    \item Return a data frame of Analysis, Time, AHR, Events, theta, info, info0.
 #'   }
 #' }
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
@@ -56,31 +56,23 @@
 #' event times. The [expected_time()] function is used to get events and
 #' average HR at targeted `analysis_time`.
 #'
-#' @importFrom tibble tibble
-#'
 #' @export
 #'
 #' @examples
 #' library(gsDesign)
 #' library(gsDesign2)
 #'
-#' # ------------------------ #
-#' #       Example 1          #
-#' # ------------------------ #
+#' # Example 1 ----
 #' \donttest{
 #' # Only put in targeted events
 #' gs_info_ahr(event = c(30, 40, 50))
 #' }
-#' # ------------------------ #
-#' #       Example 2          #
-#' # ------------------------ #
+#' # Example 2 ----
 #'
 #' # Only put in targeted analysis times
 #' gs_info_ahr(analysis_time = c(18, 27, 36))
 #'
-#' # ------------------------ #
-#' #       Example 3          #
-#' # ------------------------ #
+#' # Example 3 ----
 #' \donttest{
 #' # Some analysis times after time at which targeted event accrue
 #' # Check that both Time >= input analysis_time and event >= input event
@@ -102,9 +94,7 @@ gs_info_ahr <- function(
     event = NULL, # event at analyses
     analysis_time = NULL, # times of analyses
     interval = c(.01, 100)) {
-  # ----------------------------#
-  #    check input values       #
-  # ----------------------------#
+  # Check input values ----
   check_enroll_rate(enroll_rate)
   check_fail_rate(fail_rate)
   check_enroll_rate_fail_rate(enroll_rate, fail_rate)
@@ -130,9 +120,7 @@ gs_info_ahr <- function(
     }
   }
 
-  # ----------------------------#
-  #    check input values       #
-  # ----------------------------#
+  # Check input values ----
   avehr <- NULL
   if (!is.null(analysis_time)) {
     # calculate AHR, Events, info, info0 given the analysis_time
@@ -163,15 +151,11 @@ gs_info_ahr <- function(
     }
   }
 
-  # ----------------------------#
-  #    compute theta            #
-  # ----------------------------#
+  # Compute theta ----
   avehr$analysis <- seq_len(nrow(avehr))
   avehr$theta <- -log(avehr$ahr)
 
-  # ----------------------------#
-  #    output results           #
-  # ----------------------------#
-  ans <- avehr %>% dplyr::transmute(analysis, time, event, ahr, theta, info, info0)
+  # Output results ----
+  ans <- avehr[, c("analysis", "time", "event", "ahr", "theta", "info", "info0")]
   return(ans)
 }

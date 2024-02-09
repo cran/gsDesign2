@@ -27,7 +27,7 @@ test_that("AHR", {
 
   y <- fixed_design_ahr(
     alpha = 0.025,
-    enroll_rate = enroll_rate %>% mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
+    enroll_rate = enroll_rate %>% dplyr::mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
     study_duration = study_duration, ratio = ratio
   )
 
@@ -40,16 +40,17 @@ test_that("FH", {
     enroll_rate = enroll_rate, fail_rate = fail_rate,
     study_duration = study_duration, ratio = ratio,
     rho = 0.5, gamma = 0.5
-  )
+  ) |> to_integer()
 
   y <- fixed_design_fh(
     alpha = 0.025,
-    enroll_rate = enroll_rate %>% mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
+    enroll_rate = enroll_rate %>% dplyr::mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
     study_duration = study_duration, ratio = ratio,
     rho = 0.5, gamma = 0.5
   )
 
-  expect_equal(y$analysis$power, 0.9)
+  expect_true(y$analysis$power >= 0.9)
+  expect_equal(y$analysis$power, 0.9, tolerance = 0.01)
 })
 
 test_that("MB", {
@@ -58,16 +59,17 @@ test_that("MB", {
     enroll_rate = enroll_rate, fail_rate = fail_rate,
     study_duration = study_duration, ratio = ratio,
     tau = 8
-  )
+  ) |> to_integer()
 
   y <- fixed_design_mb(
     alpha = 0.025,
-    enroll_rate = enroll_rate %>% mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
+    enroll_rate = enroll_rate %>% dplyr::mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
     study_duration = study_duration, ratio = ratio,
     tau = 8
   )
 
-  expect_equal(y$analysis$power, 0.9)
+  expect_true(y$analysis$power >= 0.9)
+  expect_equal(y$analysis$power, 0.9, tolerance = 0.01)
 })
 
 test_that("LF", {
@@ -75,15 +77,15 @@ test_that("LF", {
     alpha = 0.025, power = 0.9,
     enroll_rate = enroll_rate, fail_rate = fail_rate,
     study_duration = study_duration, ratio = ratio
-  )
+  ) |> to_integer()
 
   y <- fixed_design_lf(
     alpha = 0.025,
-    enroll_rate = enroll_rate %>% mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
+    enroll_rate = enroll_rate %>% dplyr::mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
     study_duration = study_duration, ratio = ratio
   )
 
-  expect_equal(y$analysis$power, 0.9)
+  expect_equal(y$analysis$power, 0.9, tolerance = 0.01)
 })
 
 test_that("MaxCombo", {
@@ -98,7 +100,7 @@ test_that("MaxCombo", {
 
   y <- fixed_design_maxcombo(
     alpha = 0.025,
-    enroll_rate = enroll_rate %>% mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
+    enroll_rate = enroll_rate %>% dplyr::mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
     study_duration = study_duration, ratio = ratio,
     rho = c(0, 0.5, 0.5),
     gamma = c(0, 0, 0.5),
@@ -118,7 +120,7 @@ test_that("RMST", {
 
   y <- fixed_design_rmst(
     alpha = 0.025,
-    enroll_rate = enroll_rate %>% mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
+    enroll_rate = enroll_rate %>% dplyr::mutate(rate = x$analysis$n / duration), fail_rate = fail_rate,
     study_duration = study_duration, ratio = ratio,
     tau = 18
   )

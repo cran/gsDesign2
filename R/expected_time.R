@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -31,7 +31,7 @@
 #' @param interval An interval that is presumed to include the time at which
 #'   expected event count is equal to `target_event`.
 #'
-#' @return A tibble with `Time` (computed to match events in `target_event`),
+#' @return A data frame with `Time` (computed to match events in `target_event`),
 #'   `AHR` (average hazard ratio), `Events` (`target_event` input),
 #'   `info` (information under given scenarios), and `info0`
 #'   (information under related null hypothesis) for each value of
@@ -41,7 +41,7 @@
 #' \if{latex}{
 #'  \itemize{
 #'    \item Use root-finding routine with `AHR()` to find time at which targeted events accrue.
-#'    \item Return a tibble with a single row with the output from `AHR()` got the specified output.
+#'    \item Return a data frame with a single row with the output from `AHR()` got the specified output.
 #'    }
 #'  }
 #'
@@ -50,17 +50,13 @@
 #' @export
 #'
 #' @examples
-#' # ------------------------#
-#' #      Example 1          #
-#' # ------------------------#
+#' # Example 1 ----
 #' # default
 #' \donttest{
 #' expected_time()
 #' }
 #'
-#' # ------------------------#
-#' #      Example 2          #
-#' # ------------------------#
+#' # Example 2 ----
 #' # check that result matches a finding using AHR()
 #' # Start by deriving an expected event count
 #' enroll_rate <- define_enroll_rate(duration = c(2, 2, 10), rate = c(3, 6, 9) * 5)
@@ -95,31 +91,16 @@ expected_time <- function(
     target_event = 150,
     ratio = 1,
     interval = c(.01, 100)) {
-  # ----------------------------#
-  #    check inputs             #
-  # ----------------------------#
+  # Check inputs ----
   check_ratio(ratio)
   if (length(target_event) > 1) {
     stop("expected_time(): the input target_event` should be a positive numer, rather than a vector!")
   }
 
-  # ----------------------------#
-  #    build a help function    #
-  # ----------------------------#
-  # find the difference between  `AHR()` and different values of total_duration
-  event_diff <- function(x) {
-    ans <- ahr(
-      enroll_rate = enroll_rate, fail_rate = fail_rate,
-      total_duration = x, ratio = ratio
-    )$event - target_event
-    return(ans)
-  }
-
-  # ----------------------------#
-  #       uniroot AHR()         #
-  #    over total_duration      #
-  # ----------------------------#
-  res <- try(uniroot(event_diff, interval))
+  # Perform uniroot AHR() over total_duration ----
+  res <- try(
+    uniroot(event_diff, interval, enroll_rate, fail_rate, ratio, target_event)
+  )
 
   if (inherits(res, "try-error")) {
     stop("expected_time(): solution not found!")
@@ -130,4 +111,27 @@ expected_time <- function(
     )
     return(ans)
   }
+}
+
+#' Considering the enrollment rate, failure rate, and randomization ratio,
+#' calculate the difference between the targeted number of events and the
+#' accumulated events at time `x`
+#'
+#' A helper function passed to `uniroot()`
+#'
+#' @param x Duration
+#' @inheritParams expected_time
+#'
+#' @return A single numeric value that represents the difference between the
+#'   expected number of events for the provided duration (`x`) and the targeted
+#'   number of events (`target_event`)
+#'
+#' @keywords internal
+event_diff <- function(x, enroll_rate, fail_rate, ratio, target_event) {
+  expected <- ahr(
+    enroll_rate = enroll_rate, fail_rate = fail_rate,
+    total_duration = x, ratio = ratio
+  )
+  ans <- expected$event - target_event
+  return(ans)
 }

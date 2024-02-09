@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -32,13 +32,12 @@
 #'   theta0 (standardized treatment effect under null hypothesis),
 #'   and statistical information.
 #'
+#' @importFrom dplyr group_by left_join mutate select summarize ungroup
 #'
 #' @export
 #'
 #' @examples
-#' # --------------------- #
-#' #      example 1        #
-#' # --------------------- #
+#' # Example 1 ----
 #' # unstratified case with H0: rd0 = 0
 #' gs_info_rd(
 #'   p_c = tibble::tibble(stratum = "All", rate = .15),
@@ -48,9 +47,7 @@
 #'   ratio = 1
 #' )
 #'
-#' # --------------------- #
-#' #      example 2        #
-#' # --------------------- #
+#' # Example 2 ----
 #' # unstratified case with H0: rd0 != 0
 #' gs_info_rd(
 #'   p_c = tibble::tibble(stratum = "All", rate = .2),
@@ -60,9 +57,7 @@
 #'   ratio = 1
 #' )
 #'
-#' # --------------------- #
-#' #      example 3        #
-#' # --------------------- #
+#' # Example 3 ----
 #' # stratified case under sample size weighting and H0: rd0 = 0
 #' gs_info_rd(
 #'   p_c = tibble::tibble(stratum = c("S1", "S2", "S3"), rate = c(.15, .2, .25)),
@@ -77,9 +72,7 @@
 #'   weight = "ss"
 #' )
 #'
-#' # --------------------- #
-#' #      example 4        #
-#' # --------------------- #
+#' # Example 4 ----
 #' # stratified case under inverse variance weighting and H0: rd0 = 0
 #' gs_info_rd(
 #'   p_c = tibble::tibble(
@@ -100,9 +93,7 @@
 #'   weight = "invar"
 #' )
 #'
-#' # --------------------- #
-#' #      example 5        #
-#' # --------------------- #
+#' # Example 5 ----
 #' # stratified case under sample size weighting and H0: rd0 != 0
 #' gs_info_rd(
 #'   p_c = tibble::tibble(
@@ -123,9 +114,7 @@
 #'   weight = "ss"
 #' )
 #'
-#' # --------------------- #
-#' #      example 6        #
-#' # --------------------- #
+#' # Example 6 ----
 #' # stratified case under inverse variance weighting and H0: rd0 != 0
 #' gs_info_rd(
 #'   p_c = tibble::tibble(
@@ -146,9 +135,7 @@
 #'   weight = "invar"
 #' )
 #'
-#' # --------------------- #
-#' #      example 7        #
-#' # --------------------- #
+#' # Example 7 ----
 #' # stratified case under inverse variance weighting and H0: rd0 != 0 and
 #' # rd0 difference for different statum
 #' gs_info_rd(
@@ -192,9 +179,7 @@ gs_info_rd <- function(
   n_analysis <- max(n$analysis)
   weight <- match.arg(weight)
 
-  # -------------------------------------------------#
-  #       pool the input arguments together          #
-  # -------------------------------------------------#
+  # Pool the input arguments together ----
   suppressMessages(
     tbl <- n %>%
       left_join(p_c) %>%
@@ -216,11 +201,7 @@ gs_info_rd <- function(
       )
   )
 
-
-
-  # -------------------------------------------------#
-  #   calculate the variance of the risk difference  #
-  # -------------------------------------------------#
+  # Calculate the variance of the risk difference ----
   if (is.numeric(rd0) && rd0 == 0) {
     tbl <- tbl %>% mutate(
       sigma2_H0_per_k_per_s = p_pool_per_k_per_s * (1 - p_pool_per_k_per_s) * (1 / n_c + 1 / n_e),
@@ -233,9 +214,7 @@ gs_info_rd <- function(
     )
   }
 
-  # -------------------------------------------------#
-  #               assign weights                     #
-  # -------------------------------------------------#
+  # Assign weights ----
   if (weight == "unstratified") {
     tbl <- tbl %>% mutate(weight_per_k_per_s = 1)
   } else if (weight == "ss") {
@@ -262,9 +241,7 @@ gs_info_rd <- function(
     )
   }
 
-  # -------------------------------------------------#
-  #           pool the strata together               #
-  # -------------------------------------------------#
+  # Pool the strata together ----
   ans <- tbl %>%
     dplyr::group_by(analysis) %>%
     summarize(

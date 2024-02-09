@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -83,9 +83,7 @@
 #'   ratio = 1
 #' )
 #'
-#' # -------------------------#
-#' #       example 1          #
-#' # ------------------------ #
+#' # Example 1 ----
 #' # User-defined boundary
 #' \donttest{
 #' gs_design_combo(
@@ -99,9 +97,7 @@
 #'   lpar = x$lower$bound
 #' )
 #' }
-#' # -------------------------#
-#' #       example 2          #
-#' # ------------------------ #
+#' # Example 2 ----
 #' \donttest{
 #' # Boundary derived by spending function
 #' gs_design_combo(
@@ -178,27 +174,16 @@ gs_design_combo <- function(
     two_sided <- TRUE
   }
 
+  if (all(fail_rate$hr == 1)) {
+    stop("gs_design_combo() hr must not be equal to 1 throughout the study as this is the null hypothesis.")
+  }
+
   # Information Fraction
   if (n_analysis == 1) {
     min_info_frac <- 1
   } else {
     info_frac <- tapply(info$info0, info$test, function(x) x / max(x))
     min_info_frac <- apply(do.call(rbind, info_frac), 2, min)
-  }
-
-  # Function to calculate power
-  get_combo_power <- function(n, beta, ...) {
-    # Probability Cross Boundary
-    prob <- gs_prob_combo(
-      upper_bound = bound$upper,
-      lower_bound = bound$lower,
-      analysis = info_fh$analysis,
-      theta = theta_fh * sqrt(n),
-      corr = corr_fh,
-      algorithm = algorithm, ...
-    )
-
-    max(subset(prob, bound == "upper")$probability) - (1 - beta)
   }
 
   # Find sample size and bound
@@ -221,8 +206,21 @@ gs_design_combo <- function(
       ...
     )
 
-
-    sample_size <- uniroot(get_combo_power, c(1, n_upper_bound), extendInt = "yes", beta = beta, ...)$root
+    sample_size_results <- uniroot(
+      f = get_combo_power,
+      interval = c(1, n_upper_bound),
+      # arguments passed to f(), i.e. get_combo_power()
+      bound = bound,
+      info_fh = info_fh,
+      theta_fh = theta_fh,
+      corr_fh = corr_fh,
+      algorithm = algorithm,
+      beta = beta,
+      ...,
+      # further arguments to uniroot()
+      extendInt = "yes"
+    )
+    sample_size <- sample_size_results$root
   }
 
   # Probability Cross Boundary
@@ -326,9 +324,7 @@ gs_design_combo <- function(
     ) %>%
     arrange(analysis)
 
-  # --------------------------------------------- #
-  #     output                                    #
-  # --------------------------------------------- #
+  # Output ----
   output <- list(
     enroll_rate = enroll_rate %>% mutate(rate = rate * max(analysis$n) / sum(rate * duration)),
     fail_rate = fail_rate,
@@ -342,4 +338,32 @@ gs_design_combo <- function(
   }
 
   return(output)
+}
+
+#' Function to calculate power
+#'
+#' A helper function passed to `uniroot()`
+#'
+#' This function calculates the difference between the derived power and the
+#' targeted power (1 - beta), based on the provided sample size, upper and lower
+#' boundaries, and treatment effect.
+#'
+#' @param n Input sample size
+#' @inheritParams gs_design_combo
+#'
+#' @return The optimal sample size (a single numeric value)
+#'
+#' @keywords internal
+get_combo_power <- function(n, bound, info_fh, theta_fh, corr_fh, algorithm, beta, ...) {
+  # Probability Cross Boundary
+  prob <- gs_prob_combo(
+    upper_bound = bound$upper,
+    lower_bound = bound$lower,
+    analysis = info_fh$analysis,
+    theta = theta_fh * sqrt(n),
+    corr = corr_fh,
+    algorithm = algorithm, ...
+  )
+
+  max(subset(prob, bound == "upper")$probability) - (1 - beta)
 }

@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -70,23 +70,19 @@ fixed_design_lf <- function(
     study_duration = 36,
     enroll_rate,
     fail_rate) {
-  # --------------------------------------------- #
-  #     check inputs                              #
-  # --------------------------------------------- #
+  # Check inputs ----
   check_enroll_rate(enroll_rate)
   check_fail_rate(fail_rate)
   check_enroll_rate_fail_rate(enroll_rate, fail_rate)
-  # ------------------------- #
-  #     save inputs           #
-  # ------------------------- #
+
+  # Save inputs ----
   input <- list(
     alpha = alpha, power = power, ratio = ratio, study_duration = study_duration,
     enroll_rate = enroll_rate,
     fail_rate = fail_rate
   )
-  # ------------------------- #
-  #     generate design       #
-  # ------------------------- #
+
+  # Generate design ----
   # check if it is stratum
   n_stratum1 <- length(unique(enroll_rate$stratum))
   n_stratum2 <- length(unique(fail_rate$stratum))
