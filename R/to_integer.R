@@ -91,11 +91,14 @@ to_integer.fixed_design <- function(x, sample_size = TRUE, ...) {
   enroll_rate_new <- x$enroll_rate %>%
     mutate(rate = rate * ceiling(output_n / multiply_factor) * multiply_factor / output_n)
 
+  # Round up the FA events
+  event_ceiling <- ceiling(x$analysis$event) |> as.integer()
+
   if ((x$design == "ahr") && (input_n != output_n)) {
     x_new <- gs_power_ahr(
       enroll_rate = enroll_rate_new,
       fail_rate = x$input$fail_rate,
-      event = as.numeric(ceiling(x$analysis$event)),
+      event = event_ceiling,
       analysis_time = NULL,
       ratio = x$input$ratio,
       upar = qnorm(1 - x$input$alpha), lpar = -Inf
@@ -121,7 +124,7 @@ to_integer.fixed_design <- function(x, sample_size = TRUE, ...) {
     x_new <- gs_power_wlr(
       enroll_rate = enroll_rate_new,
       fail_rate = x$input$fail_rate,
-      event = as.numeric(ceiling(x$analysis$event)),
+      event = event_ceiling,
       analysis_time = NULL,
       ratio = x$input$ratio,
       upar = qnorm(1 - x$input$alpha), lpar = -Inf,
@@ -153,7 +156,7 @@ to_integer.fixed_design <- function(x, sample_size = TRUE, ...) {
     x_new <- gs_power_wlr(
       enroll_rate = enroll_rate_new,
       fail_rate = x$input$fail_rate,
-      event = as.numeric(ceiling(x$analysis$event)),
+      event = event_ceiling,
       analysis_time = NULL,
       ratio = x$input$ratio,
       weight = function(s, arm0, arm1) {
@@ -184,6 +187,17 @@ to_integer.fixed_design <- function(x, sample_size = TRUE, ...) {
   } else {
     message("The input object is not applicatable to get an integer sample size.")
     ans <- x
+  }
+
+  # Make n and event of ans$analysis exactly integers
+  if ("fixed_design" %in% class(ans)) {
+    if (is_almost_k(x = ans$analysis$n, k = round(ans$analysis$n))) {
+      ans$analysis$n <- round(ans$analysis$n)
+    }
+
+    if (is_almost_k(x = ans$analysis$event, k = round(ans$analysis$event))) {
+      ans$analysis$event <- round(ans$analysis$event)
+    }
   }
 
   return(ans)
@@ -236,7 +250,8 @@ to_integer.gs_design <- function(x, sample_size = TRUE, ...) {
       test_upper = x$input$test_upper,
       test_lower = x$input$test_lower,
       binding = x$input$binding,
-      info_scale = x$input$info_scale, r = x$input$r, tol = x$input$tol
+      info_scale = x$input$info_scale, r = x$input$r, tol = x$input$tol,
+      interval = c(0.01, max(x$analysis$time) + 100)
     )
   } else if ("wlr" %in% class(x)) {
     event <- x$analysis$event
@@ -272,7 +287,8 @@ to_integer.gs_design <- function(x, sample_size = TRUE, ...) {
       binding = x$input$binding,
       info_scale = x$input$info_scale, r = x$input$r, tol = x$input$tol,
       weight = x$input$weight,
-      approx = x$input$approx
+      approx = x$input$approx,
+      interval = c(0.01, max(x$analysis$time) + 100)
     )
   } else if ("rd" %in% class(x)) {
     n_stratum <- length(x$input$p_c$stratum)
@@ -335,6 +351,25 @@ to_integer.gs_design <- function(x, sample_size = TRUE, ...) {
   } else {
     message("The input object is not applicatable to get an integer sample size.")
     x_new <- x
+  }
+
+  # Make n and event of x_new$analysis exactly integers
+  if ("ahr" %in% class(x) || "wlr" %in% class(x)) {
+    for (i in seq_along(n_analysis)) {
+      if (is_almost_k(x = x_new$analysis$n[i], k = round(x_new$analysis$n[i]))) {
+        x_new$analysis$n[i] <- round(x_new$analysis$n[i])
+      }
+
+      if (is_almost_k(x = x_new$analysis$event[i], k = round(x_new$analysis$event[i]))) {
+        x_new$analysis$event[i] <- round(x_new$analysis$event[i])
+      }
+    }
+  } else if ("rd" %in% class(x)) {
+    for (i in seq_along(n_analysis)) {
+      if (is_almost_k(x = x_new$analysis$n[i], k = round(x_new$analysis$n[i]))) {
+        x_new$analysis$n[i] <- round(x_new$analysis$n[i])
+      }
+    }
   }
 
   return(x_new)
