@@ -1,6 +1,6 @@
 Package: gsDesign2
 Title: Group Sequential Design with Non-Constant Effect
-Version: 1.1.1
+Version: 1.1.2
 Authors@R: c(
     person("Keaven", "Anderson", email = "keaven_anderson@merck.com", role = c("aut")),
     person("Yilong", "Zhang", email = "elong0527@gmail.com", role = c("aut")),
@@ -17,6 +17,7 @@ Authors@R: c(
     person("Hongtao", "Zhang", email = "hongtao.zhang1@merck.com", role = c("ctb")),
     person("Yalin", "Zhu", email = "yalin.zhu@outlook.com", role = c("ctb")),
     person("John", "Blischak", email = "jdblischak@gmail.com", role = c("ctb")),
+    person("Dickson", "Wanjau", email = "dickson.wanjau@merck.com", role = c("ctb")),
     person("Merck & Co., Inc., Rahway, NJ, USA and its affiliates", role = "cph")
     )
 Description: The goal of 'gsDesign2' is to enable fixed or group sequential
@@ -35,13 +36,14 @@ BugReports: https://github.com/Merck/gsDesign2/issues
 Encoding: UTF-8
 Depends: R (>= 3.5.0)
 Imports: corpcor, data.table, dplyr, gsDesign, gt, methods, mvtnorm,
-        npsurvSS, r2rtf, stats, tibble, tidyr, utils, Rcpp
-Suggests: covr, ggplot2, kableExtra, knitr, rmarkdown, testthat
+        npsurvSS, r2rtf, stats, survival, tibble, tidyr, utils, Rcpp
+Suggests: covr, ggplot2, kableExtra, knitr, rmarkdown, simtrial,
+        testthat (>= 3.0.0)
 VignetteBuilder: knitr
 LinkingTo: Rcpp
 RoxygenNote: 7.3.1
 NeedsCompilation: yes
-Packaged: 2024-02-09 15:58:38 UTC; xiaonan4
+Packaged: 2024-04-09 17:12:04 UTC; zhayuji4
 Author: Keaven Anderson [aut],
   Yilong Zhang [aut],
   Yujie Zhao [aut, cre],
@@ -57,7 +59,8 @@ Author: Keaven Anderson [aut],
   Hongtao Zhang [ctb],
   Yalin Zhu [ctb],
   John Blischak [ctb],
+  Dickson Wanjau [ctb],
   Merck & Co., Inc., Rahway, NJ, USA and its affiliates [cph]
 Maintainer: Yujie Zhao <yujie.zhao@merck.com>
 Repository: CRAN
-Date/Publication: 2024-02-09 16:30:05 UTC
+Date/Publication: 2024-04-09 17:40:02 UTC

@@ -32,9 +32,8 @@ as_gt <- function(x, ...) {
 #'
 #' @export
 #'
-#' @examples
+#' @examplesIf interactive() && !identical(Sys.getenv("IN_PKGDOWN"), "true")
 #' library(dplyr)
-#' library(tibble)
 #'
 #' # Enrollment rate
 #' enroll_rate <- define_enroll_rate(
@@ -62,8 +61,7 @@ as_gt <- function(x, ...) {
 #' # Type II error (1 - power)
 #' beta <- 0.1
 #'
-#' # AHR ----
-#' # under fixed power
+#' # Example 1 ----
 #' fixed_design_ahr(
 #'   alpha = alpha, power = 1 - beta,
 #'   enroll_rate = enroll_rate, fail_rate = fail_rate,
@@ -72,8 +70,7 @@ as_gt <- function(x, ...) {
 #'   summary() %>%
 #'   as_gt()
 #'
-#' # FH ----
-#' # under fixed power
+#' # Example 2 ----
 #' fixed_design_fh(
 #'   alpha = alpha, power = 1 - beta,
 #'   enroll_rate = enroll_rate, fail_rate = fail_rate,
@@ -214,10 +211,10 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL, ...) {
 #'
 #' @export
 #'
-#' @examples
-#' \donttest{
-#' # the default output
+#' @examplesIf interactive() && !identical(Sys.getenv("IN_PKGDOWN"), "true")
 #' library(dplyr)
+#' # Example 1 ----
+#' # The default output
 #'
 #' gs_design_ahr() %>%
 #'   summary() %>%
@@ -235,7 +232,6 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL, ...) {
 #'   summary() %>%
 #'   as_gt()
 #'
-#'
 #' gs_power_combo() %>%
 #'   summary() %>%
 #'   as_gt()
@@ -248,7 +244,8 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL, ...) {
 #'   summary() %>%
 #'   as_gt()
 #'
-#' # usage of title = ..., subtitle = ...
+#' # Example 2 ----
+#' # Usage of title = ..., subtitle = ...
 #' # to edit the title/subtitle
 #' gs_power_wlr() %>%
 #'   summary() %>%
@@ -257,7 +254,8 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL, ...) {
 #'     subtitle = "from gs_power_wlr"
 #'   )
 #'
-#' # usage of colname_spanner = ..., colname_spannersub = ...
+#' # Example 3 ----
+#' # Usage of colname_spanner = ..., colname_spannersub = ...
 #' # to edit the spanner and its sub-spanner
 #' gs_power_wlr() %>%
 #'   summary() %>%
@@ -266,7 +264,8 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL, ...) {
 #'     colname_spannersub = c("under H1", "under H0")
 #'   )
 #'
-#' # usage of footnote = ...
+#' # Example 4 ----
+#' # Usage of footnote = ...
 #' # to edit the footnote
 #' gs_power_wlr() %>%
 #'   summary() %>%
@@ -283,41 +282,55 @@ as_gt.fixed_design <- function(x, title = NULL, footnote = NULL, ...) {
 #'     )
 #'   )
 #'
-#' # usage of display_bound = ...
+#' # Example 5 ----
+#' # Usage of display_bound = ...
 #' # to either show efficacy bound or futility bound, or both(default)
 #' gs_power_wlr() %>%
 #'   summary() %>%
 #'   as_gt(display_bound = "Efficacy")
 #'
-#' # usage of display_columns = ...
+#' # Example 6 ----
+#' # Usage of display_columns = ...
 #' # to select the columns to display in the summary table
 #' gs_power_wlr() %>%
 #'   summary() %>%
 #'   as_gt(display_columns = c("Analysis", "Bound", "Nominal p", "Z", "Probability"))
-#' }
-as_gt.gs_design <- function(x,
-                            title = NULL,
-                            subtitle = NULL,
-                            colname_spanner = "Cumulative boundary crossing probability",
-                            colname_spannersub = c("Alternate hypothesis", "Null hypothesis"),
-                            footnote = NULL,
-                            display_bound = c("Efficacy", "Futility"),
-                            display_columns = NULL,
-                            display_inf_bound = TRUE,
-                            full_alpha = 0.025,
-                            ...) {
+#'
+as_gt.gs_design <- function(
+    x,
+    title = NULL,
+    subtitle = NULL,
+    colname_spanner = "Cumulative boundary crossing probability",
+    colname_spannersub = c("Alternate hypothesis", "Null hypothesis"),
+    footnote = NULL,
+    display_bound = c("Efficacy", "Futility"),
+    display_columns = NULL,
+    display_inf_bound = FALSE,
+    full_alpha = 0.025,
+    ...) {
+
   method <- class(x)[class(x) %in% c("ahr", "wlr", "combo", "rd")]
+
   x_alpha <- max((x %>% dplyr::filter(Bound == display_bound[1]))[[colname_spannersub[2]]])
+
   x_non_binding <- "non_binding" %in% class(x)
+
   x_k <- lapply(x$Analysis, function(x) {
     return(as.numeric(substring(x, 11, 11)))
   }) %>% unlist()
+
+  if (!display_inf_bound) {
+    x <- x %>% filter(!is.infinite(Z))
+  }
+
   x_old <- x
 
   # Set defaults ----
   # set different default title to different methods
   if (method == "ahr" && is.null(title)) {
-    title <- "Bound summary for AHR design"
+    title <- ifelse("updated_design" %in% class(x),
+                    "Updated Bound summary for AHR design",
+                    "Bound summary for AHR design")
   }
   if (method == "wlr" && is.null(title)) {
     title <- "Bound summary for WLR design"
