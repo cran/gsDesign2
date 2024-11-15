@@ -57,7 +57,7 @@ utils::globalVariables(
       # From `gs_design_wlr()`
       c(
         "IF", "time", "event", "info", "info0", "theta", "bound",
-        "z", "n", "rate"
+        "z", "n", "rate", "delta", "sigma2"
       ),
       # From `gs_info_ahr()`
       c("analysis", "time", "theta", "info", "info0"),
@@ -95,6 +95,8 @@ utils::globalVariables(
       ),
       # From `ppwe()`
       c("h", "duration", "H"),
+      # From `pw_info()`
+      c("t_end", "t_min"),
       # From `s2pwe()`
       c("Times", "Survival", "H", "duration", "rate"),
       # From `summary.fixed_design()`

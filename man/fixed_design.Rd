@@ -62,7 +62,8 @@ fixed_design_mb(
   study_duration = 36,
   enroll_rate,
   fail_rate,
-  tau = 6
+  tau = 6,
+  w_max = Inf
 )
 
 fixed_design_milestone(
@@ -111,11 +112,13 @@ and \code{1 - alpha} otherwise).}
 
 \item{event}{Targeted event at each analysis.}
 
-\item{rho}{A vector of numbers paring with gamma and tau for maxcombo test.}
+\item{rho}{A vector of numbers paring with gamma and tau for MaxCombo test.}
 
-\item{gamma}{A vector of numbers paring with rho and tau for maxcombo test.}
+\item{gamma}{A vector of numbers paring with rho and tau for MaxCombo test.}
 
 \item{tau}{Test parameter in RMST.}
+
+\item{w_max}{Test parameter of Magirr-Burman method.}
 
 \item{p_c}{A numerical value of the control arm rate.}
 
@@ -229,7 +232,7 @@ x <- fixed_design_lf(
 x \%>\% summary()
 
 # Example 2: given sample size and compute power
-x <- fixed_design_fh(
+x <- fixed_design_lf(
   alpha = .025,
   enroll_rate = define_enroll_rate(duration = 18, rate = 20),
   fail_rate = define_fail_rate(
@@ -289,7 +292,8 @@ x <- fixed_design_mb(
     dropout_rate = .001
   ),
   study_duration = 36,
-  tau = 4
+  tau = 4,
+  w_max = 2
 )
 x \%>\% summary()
 
@@ -304,7 +308,8 @@ x <- fixed_design_mb(
     dropout_rate = .001
   ),
   study_duration = 36,
-  tau = 4
+  tau = 4,
+  w_max = 2
 )
 x \%>\% summary()
 

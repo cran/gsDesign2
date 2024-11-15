@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#' Average hazard ratio under non-proportional hazards (test version)
+#' Average hazard ratio under non-proportional hazards
 #'
 #' Provides a geometric average hazard ratio under
 #' various non-proportional hazards assumptions for either single or multiple strata studies.
@@ -32,7 +32,7 @@
 #' @param ratio Ratio of experimental to control randomization.
 #'
 #' @return A data frame with `time` (from `total_duration`),
-#'   `ahr` (average hazard ratio), `event` (expected number of events),
+#'   `ahr` (average hazard ratio), `n` (sample size), `event` (expected number of events),
 #'   `info` (information under given scenarios), `and` info0
 #'   (information under related null hypothesis) for each value of
 #'   `total_duration` input.
@@ -72,18 +72,16 @@
 #' }
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
-#' @importFrom data.table setDF setDT
-#'
 #' @export
 #'
 #' @examples
-#' # Example: default
+#' # Example 1: default
 #' ahr()
 #'
-#' # Example: default with multiple analysis times (varying total_duration)
+#' # Example 2: default with multiple analysis times (varying total_duration)
 #' ahr(total_duration = c(15, 30))
 #'
-#' # Stratified population
+#' # Example 3: stratified population
 #' enroll_rate <- define_enroll_rate(
 #'   stratum = c(rep("Low", 2), rep("High", 3)),
 #'   duration = c(2, 10, 4, 4, 8),
@@ -91,7 +89,7 @@
 #' )
 #' fail_rate <- define_fail_rate(
 #'   stratum = c(rep("Low", 2), rep("High", 2)),
-#'   duration = 1,
+#'   duration = c(1, Inf, 1, Inf),
 #'   fail_rate = c(.1, .2, .3, .4),
 #'   dropout_rate = .001,
 #'   hr = c(.9, .75, .8, .6)
@@ -100,26 +98,31 @@
 ahr <- function(
     enroll_rate = define_enroll_rate(
       duration = c(2, 2, 10),
-      rate = c(3, 6, 9)
-    ),
+      rate = c(3, 6, 9)),
     fail_rate = define_fail_rate(
       duration = c(3, 100),
       fail_rate = log(2) / c(9, 18),
       hr = c(.9, .6),
-      dropout_rate = .001
-    ),
+      dropout_rate = .001),
     total_duration = 30,
     ratio = 1) {
+
+  # get time, HR, expected events,and statistical information
+  # under the piecewise model
   res <- pw_info(
     enroll_rate = enroll_rate,
     fail_rate = fail_rate,
     total_duration = total_duration,
-    ratio = ratio
-  )
+    ratio = ratio)
+
+  # make the above output as a data.table
   setDT(res)
+
+  # summarize the above results by time
   ans <- res[,
     .(
       ahr = exp(sum(log(hr) * event) / sum(event)),
+      n = sum(n),
       event = sum(event),
       info = sum(info),
       info0 = sum(info0)

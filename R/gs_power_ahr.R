@@ -53,9 +53,12 @@
 #' @param tol Tolerance parameter for boundary convergence (on Z-scale).
 #' @param interval An interval that is presumed to include the time at which
 #'   expected event count is equal to targeted event.
+#' @param integer Logical value integer whether it is an integer design
+#' (i.e., integer sample size and events) or not. This argument is commonly
+#' used when creating integer design via [to_integer()].
 #'
-#' @return A tibble with columns `Analysis`, `Bound`, `Z`, `Probability`,
-#'   `theta`, `Time`, `AHR`, `Events`.
+#' @return A tibble with columns `analysis`, `bound`, `z`, `probability`,
+#'   `theta`, `time`, `ahr`, `event`.
 #'   Contains a row for each analysis and each bound.
 #'
 #' @details
@@ -77,11 +80,6 @@
 #' }
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
-#' @importFrom tibble tibble
-#' @importFrom gsDesign gsDesign sfLDOF
-#' @importFrom stats qnorm
-#' @importFrom dplyr select arrange desc
-#'
 #' @export
 #'
 #' @examples
@@ -92,7 +90,7 @@
 #' # The default output of `gs_power_ahr()` is driven by events,
 #' # i.e., `event = c(30, 40, 50)`, `analysis_time = NULL`
 #' \donttest{
-#' gs_power_ahr()
+#' gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1))
 #' }
 #' # Example 2 ----
 #' # 2-sided symmetric O'Brien-Fleming spending bound, driven by analysis time,
@@ -103,9 +101,9 @@
 #'   event = NULL,
 #'   binding = TRUE,
 #'   upper = gs_spending_bound,
-#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
 #'   lower = gs_spending_bound,
-#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025)
 #' )
 #'
 #' # Example 3 ----
@@ -117,9 +115,9 @@
 #'   event = c(20, 50, 70),
 #'   binding = TRUE,
 #'   upper = gs_spending_bound,
-#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
 #'   lower = gs_spending_bound,
-#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025)
 #' )
 #' }
 #' # Example 4 ----
@@ -135,9 +133,9 @@
 #'   event = c(30, 40, 50),
 #'   binding = TRUE,
 #'   upper = gs_spending_bound,
-#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+#'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
 #'   lower = gs_spending_bound,
-#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+#'   lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025)
 #' )
 #' }
 gs_power_ahr <- function(
@@ -153,17 +151,10 @@ gs_power_ahr <- function(
     ),
     event = c(30, 40, 50),
     analysis_time = NULL,
-    upper = gs_b,
-    upar = gsDesign(
-      k = length(event),
-      test.type = 1,
-      n.I = event,
-      maxn.IPlan = max(event),
-      sfu = sfLDOF,
-      sfupar = NULL
-    )$upper$bound,
-    lower = gs_b,
-    lpar = c(qnorm(.1), rep(-Inf, 2)),
+    upper = gs_spending_bound,
+    upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+    lower = gs_spending_bound,
+    lpar = list(sf = gsDesign::sfLDOF, total_spend = NULL),
     test_lower = TRUE,
     test_upper = TRUE,
     ratio = 1,
@@ -171,7 +162,8 @@ gs_power_ahr <- function(
     info_scale = c("h0_h1_info", "h0_info", "h1_info"),
     r = 18,
     tol = 1e-6,
-    interval = c(.01, 1000)) {
+    interval = c(.01, 1000),
+    integer = FALSE) {
   # Get the number of analysis
   n_analysis <- max(length(event), length(analysis_time), na.rm = TRUE)
 
@@ -179,15 +171,27 @@ gs_power_ahr <- function(
   info_scale <- match.arg(info_scale)
 
   # Check if it is two-sided design or not
-  if (identical(lower, gs_b) && (!is.list(lpar))) {
+  if ((identical(lower, gs_b) && (!is.list(lpar))) || all(!test_lower)) {
     if (all(test_lower == FALSE)) {
       two_sided <- FALSE
-      lpar <- rep(-Inf, n_analysis)
     } else {
       two_sided <- ifelse(identical(lpar, rep(-Inf, n_analysis)), FALSE, TRUE)
     }
   } else {
     two_sided <- TRUE
+  }
+
+  if (!two_sided) {
+    lpar <- rep(-Inf, n_analysis)
+    lower <- gs_b
+  }
+
+  # Check if user input the total spending for futility,
+  # if they use spending function for futility
+  if (two_sided && identical(lower, gs_spending_bound)) {
+    if (is.null(lpar$total_spend) && any(test_lower)) {
+      stop("gs_power_ahr: please input the total_spend to the futility spending function.")
+    }
   }
 
   # Calculate the asymptotic variance and statistical information ----
@@ -196,6 +200,19 @@ gs_power_ahr <- function(
     ratio = ratio, event = event, analysis_time = analysis_time,
     interval = interval
   )
+
+  # if both events and sample size are integers, then elaborate the info and info0
+  if (integer) {
+
+    # elaborate info0
+    q_e <- ratio / (1 + ratio)
+    q_c <- 1 - q_e
+    x$info0 <- event * q_e * q_c
+
+    # elaborate info
+    q <- event / x$event
+    x$info <- x$info * q
+  }
 
   # Given the above statistical information, calculate the power ----
   y_h1 <- gs_power_npe(
@@ -232,7 +249,7 @@ gs_power_ahr <- function(
       left_join(
         y_h0 %>%
           select(analysis, bound, probability) %>%
-          dplyr::rename(probability0 = probability)
+          rename(probability0 = probability)
       ) %>%
       select(analysis, bound, probability, probability0, z, `~hr at bound`, `nominal p`) %>%
       arrange(analysis, desc(bound))
@@ -250,7 +267,7 @@ gs_power_ahr <- function(
       left_join(
         y_h0 %>%
           select(analysis, info, info_frac) %>%
-          dplyr::rename(info0 = info, info_frac0 = info_frac) %>%
+          rename(info0 = info, info_frac0 = info_frac) %>%
           unique()
       ) %>%
       select(analysis, time, n, event, ahr, theta, info, info0, info_frac, info_frac0) %>%
@@ -261,6 +278,7 @@ gs_power_ahr <- function(
   input <- list(
     enroll_rate = enroll_rate, fail_rate = fail_rate,
     event = event, analysis_time = analysis_time,
+    info_scale = info_scale,
     upper = upper, upar = upar,
     lower = lower, lpar = lpar,
     test_lower = test_lower, test_upper = test_upper,
@@ -275,10 +293,6 @@ gs_power_ahr <- function(
     analysis = analysis
   )
 
-  class(ans) <- c("ahr", "gs_design", class(ans))
-  if (!binding) {
-    class(ans) <- c("non_binding", class(ans))
-  }
-
+  ans <- add_class(ans, if (!binding) "non_binding", "ahr", "gs_design")
   return(ans)
 }

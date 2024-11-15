@@ -21,9 +21,9 @@
 #'   and `1 - alpha` otherwise).
 #' @param ratio Experimental:Control randomization ratio.
 #' @param study_duration Study duration.
-#' @param rho A vector of numbers paring with gamma and tau for maxcombo test.
-#' @param gamma A vector of numbers paring with rho and tau for maxcombo test.
-#' @param tau A vector of numbers paring with gamma and rho for maxcombo test.
+#' @param rho A vector of numbers paring with gamma and tau for MaxCombo test.
+#' @param gamma A vector of numbers paring with rho and tau for MaxCombo test.
+#' @param tau A vector of numbers paring with gamma and rho for MaxCombo test.
 #' @inheritParams gs_design_combo
 #'
 #' @export
@@ -102,7 +102,8 @@ fixed_design_maxcombo <- function(
       enroll_rate = enroll_rate,
       fail_rate = fail_rate,
       fh_test = max_combo_test,
-      upper = gs_b, upar = qnorm(1 - alpha),
+      upper = gs_spending_combo,
+      upar = list(sf = gsDesign::sfLDOF, total_spend = alpha),
       lower = gs_b, lpar = -Inf
     )
   } else {
@@ -111,12 +112,13 @@ fixed_design_maxcombo <- function(
       enroll_rate = enroll_rate,
       fail_rate = fail_rate,
       fh_test = max_combo_test,
-      upper = gs_b, upar = qnorm(1 - alpha),
+      upper = gs_spending_combo,
+      upar = list(sf = gsDesign::sfLDOF, total_spend = alpha),
       lower = gs_b, lpar = -Inf
     )
   }
   # get the output of MaxCombo
-  ans <- tibble::tibble(
+  ans <- tibble(
     design = "maxcombo",
     n = d$analysis$n,
     event = d$analysis$event,

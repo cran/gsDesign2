@@ -32,9 +32,6 @@
 #' }
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
-#' @importFrom gsDesign gsDesign sfLDOF
-#' @importFrom dplyr left_join
-#'
 #' @export
 #'
 #' @return A list with input parameters, enrollment rate,
@@ -172,14 +169,10 @@ gs_power_wlr <- function(enroll_rate = define_enroll_rate(duration = c(2, 2, 10)
                          event = c(30, 40, 50),
                          analysis_time = NULL,
                          binding = FALSE,
-                         upper = gs_b,
-                         lower = gs_b,
-                         upar = gsDesign(
-                           k = 3, test.type = 1,
-                           n.I = c(30, 40, 50), maxn.IPlan = 50,
-                           sfu = sfLDOF, sfupar = NULL
-                         )$upper$bound,
-                         lpar = c(qnorm(.1), rep(-Inf, 2)),
+                         upper = gs_spending_bound,
+                         lower = gs_spending_bound,
+                         upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+                         lpar = list(sf = gsDesign::sfLDOF, total_spend = NULL),
                          test_upper = TRUE,
                          test_lower = TRUE,
                          ratio = 1,
@@ -188,13 +181,15 @@ gs_power_wlr <- function(enroll_rate = define_enroll_rate(duration = c(2, 2, 10)
                          approx = "asymptotic",
                          r = 18,
                          tol = 1e-6,
-                         interval = c(.01, 1000)) {
+                         interval = c(.01, 1000),
+                         integer = FALSE) {
   # check of inputted sample size
   input_sample_size <- sum(enroll_rate$rate * enroll_rate$duration)
 
-  if (!is_wholenumber(input_sample_size)) {
-    stop("gs_power_wlr: please input integer sample size, i.e.,
-         the summation of rate and duration of the enroll_rate should be an integer.")
+  # Check if user input the total spending for futility,
+  # if they use spending function for futility
+  if (identical(lower, gs_spending_bound) && is.null(lpar$total_spend)) {
+    stop("gs_power_wlr: please input the total_spend to the futility spending function.")
   }
 
   # get the number of analysis
@@ -254,15 +249,15 @@ gs_power_wlr <- function(enroll_rate = define_enroll_rate(duration = c(2, 2, 10)
   suppressMessages(
     bounds <- y_h0 %>%
       select(analysis, bound, z, probability) %>%
-      dplyr::rename(probability0 = probability) %>%
-      dplyr::left_join(
+      rename(probability0 = probability) %>%
+      left_join(
         x %>% select(analysis, event)
       ) %>%
       mutate(
         `~hr at bound` = gsDesign::zn2hr(z = z, n = event, ratio = ratio),
         `nominal p` = pnorm(-z)
       ) %>%
-      dplyr::left_join(
+      left_join(
         y_h1 %>% select(analysis, bound, probability)
       ) %>%
       select(analysis, bound, probability, probability0, z, `~hr at bound`, `nominal p`) %>%
@@ -274,15 +269,15 @@ gs_power_wlr <- function(enroll_rate = define_enroll_rate(duration = c(2, 2, 10)
     analysis <- x %>%
       select(analysis, time, event, ahr) %>%
       mutate(n = expected_accrual(time = x$time, enroll_rate = enroll_rate)) %>%
-      dplyr::left_join(
+      left_join(
         y_h1 %>%
           select(analysis, info, info_frac, theta) %>%
           unique()
       ) %>%
-      dplyr::left_join(
+      left_join(
         y_h0 %>%
           select(analysis, info, info_frac) %>%
-          dplyr::rename(info0 = info, info_frac0 = info_frac) %>%
+          rename(info0 = info, info_frac0 = info_frac) %>%
           unique()
       ) %>%
       select(analysis, time, n, event, ahr, theta, info, info0, info_frac, info_frac0) %>%
@@ -309,11 +304,7 @@ gs_power_wlr <- function(enroll_rate = define_enroll_rate(duration = c(2, 2, 10)
     analysis = analysis
   )
 
-  class(ans) <- c("wlr", "gs_design", class(ans))
-  if (!binding) {
-    class(ans) <- c("non_binding", class(ans))
-  }
-
+  ans <- add_class(ans, if (!binding) "non_binding", "wlr", "gs_design")
   return(ans)
 }
 

@@ -11,11 +11,10 @@ gs_power_ahr(
     c(0.9, 0.6), dropout_rate = rep(0.001, 2)),
   event = c(30, 40, 50),
   analysis_time = NULL,
-  upper = gs_b,
-  upar = gsDesign(k = length(event), test.type = 1, n.I = event, maxn.IPlan = max(event),
-    sfu = sfLDOF, sfupar = NULL)$upper$bound,
-  lower = gs_b,
-  lpar = c(qnorm(0.1), rep(-Inf, 2)),
+  upper = gs_spending_bound,
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
+  lower = gs_spending_bound,
+  lpar = list(sf = gsDesign::sfLDOF, total_spend = NULL),
   test_lower = TRUE,
   test_upper = TRUE,
   ratio = 1,
@@ -23,7 +22,8 @@ gs_power_ahr(
   info_scale = c("h0_h1_info", "h0_info", "h1_info"),
   r = 18,
   tol = 1e-06,
-  interval = c(0.01, 1000)
+  interval = c(0.01, 1000),
+  integer = FALSE
 )
 }
 \arguments{
@@ -76,10 +76,14 @@ Normally, \code{r} will not be changed by the user.}
 
 \item{interval}{An interval that is presumed to include the time at which
 expected event count is equal to targeted event.}
+
+\item{integer}{Logical value integer whether it is an integer design
+(i.e., integer sample size and events) or not. This argument is commonly
+used when creating integer design via \code{\link[=to_integer]{to_integer()}}.}
 }
 \value{
-A tibble with columns \code{Analysis}, \code{Bound}, \code{Z}, \code{Probability},
-\code{theta}, \code{Time}, \code{AHR}, \code{Events}.
+A tibble with columns \code{analysis}, \code{bound}, \code{z}, \code{probability},
+\code{theta}, \code{time}, \code{ahr}, \code{event}.
 Contains a row for each analysis and each bound.
 }
 \description{
@@ -115,7 +119,7 @@ library(dplyr)
 # The default output of `gs_power_ahr()` is driven by events,
 # i.e., `event = c(30, 40, 50)`, `analysis_time = NULL`
 \donttest{
-gs_power_ahr()
+gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1))
 }
 # Example 2 ----
 # 2-sided symmetric O'Brien-Fleming spending bound, driven by analysis time,
@@ -126,9 +130,9 @@ gs_power_ahr(
   event = NULL,
   binding = TRUE,
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
   lower = gs_spending_bound,
-  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025)
 )
 
 # Example 3 ----
@@ -140,9 +144,9 @@ gs_power_ahr(
   event = c(20, 50, 70),
   binding = TRUE,
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
   lower = gs_spending_bound,
-  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025)
 )
 }
 # Example 4 ----
@@ -158,9 +162,9 @@ gs_power_ahr(
   event = c(30, 40, 50),
   binding = TRUE,
   upper = gs_spending_bound,
-  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL),
+  upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025),
   lower = gs_spending_bound,
-  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL, timing = NULL)
+  lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.025)
 )
 }
 }

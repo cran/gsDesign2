@@ -89,10 +89,6 @@
 #' @details
 #' To be added.
 #'
-#' @importFrom dplyr all_of mutate full_join select arrange desc
-#' @importFrom gsDesign gsDesign sfLDOF
-#' @importFrom stats qnorm
-#'
 #' @export
 #'
 #' @examples
@@ -191,14 +187,10 @@ gs_design_ahr <- function(
     alpha = 0.025, beta = 0.1,
     info_frac = NULL, analysis_time = 36,
     ratio = 1, binding = FALSE,
-    upper = gs_b,
-    upar = gsDesign::gsDesign(
-      k = 3, test.type = 1,
-      n.I = c(.25, .75, 1),
-      sfu = sfLDOF, sfupar = NULL
-    )$upper$bound,
-    lower = gs_b,
-    lpar = c(qnorm(.1), -Inf, -Inf),
+    upper = gs_spending_bound,
+    upar = list(sf = gsDesign::sfLDOF, total_spend = alpha),
+    lower = gs_spending_bound,
+    lpar = list(sf = gsDesign::sfLDOF, total_spend = beta),
     h1_spending = TRUE,
     test_upper = TRUE,
     test_lower = TRUE,
@@ -359,6 +351,7 @@ gs_design_ahr <- function(
   # Get analysis summary to output ----
   analysis <- allout %>%
     select(analysis, time, n, event, ahr, theta, info, info0, info_frac) %>%
+    mutate(info_frac0 = event / last(event)) %>%
     unique() %>%
     arrange(analysis)
 
@@ -367,6 +360,7 @@ gs_design_ahr <- function(
     enroll_rate = enroll_rate, fail_rate = fail_rate,
     alpha = alpha, beta = beta, ratio = ratio,
     info_frac = info_frac, analysis_time = analysis_time,
+    info_scale = info_scale,
     upper = upper, upar = upar,
     lower = lower, lpar = lpar,
     test_upper = test_upper, test_lower = test_lower,
@@ -383,10 +377,6 @@ gs_design_ahr <- function(
     analysis = analysis
   )
 
-  class(ans) <- c("ahr", "gs_design", class(ans))
-  if (!binding) {
-    class(ans) <- c("non_binding", class(ans))
-  }
-
+  ans <- add_class(ans, if (!binding) "non_binding", "ahr", "gs_design")
   return(ans)
 }
