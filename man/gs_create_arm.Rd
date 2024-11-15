@@ -7,9 +7,9 @@
 gs_create_arm(enroll_rate, fail_rate, ratio, total_time = 1e+06)
 }
 \arguments{
-\item{enroll_rate}{Enrollment rates.}
+\item{enroll_rate}{Enrollment rates from \code{\link[=define_enroll_rate]{define_enroll_rate()}}.}
 
-\item{fail_rate}{Failure and dropout rates.}
+\item{fail_rate}{Failure and dropout rates from \code{\link[=define_fail_rate]{define_fail_rate()}}.}
 
 \item{ratio}{Experimental:Control randomization ratio.}
 
@@ -38,8 +38,8 @@ Create npsurvSS arm object
    shape parameter for the loss to follow-up distribution
    \item Set the scale parameter to one as the scale parameter for the loss to follow-up
     distribution since the exponential distribution is supported only
-   \item Create arm 0 using \code{gsDesign2:::create_arm()} using the parameters for arm 0.
-   \item Create arm 1 using \code{gsDesign2:::create_arm()} using the parameters for arm 1.
+   \item Create arm 0 using \code{npsurvSS::create_arm()} using the parameters for arm 0.
+   \item Create arm 1 using \code{npsurvSS::create_arm()} using the parameters for arm 1.
    \item Set the class of the two arms.
    \item Return a list of the two arms.
   }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ahr.R
 \name{ahr}
 \alias{ahr}
-\title{Average hazard ratio under non-proportional hazards (test version)}
+\title{Average hazard ratio under non-proportional hazards}
 \usage{
 ahr(
   enroll_rate = define_enroll_rate(duration = c(2, 2, 10), rate = c(3, 6, 9)),
@@ -26,7 +26,7 @@ cutoff; this can be a single value or a vector of positive numbers.}
 }
 \value{
 A data frame with \code{time} (from \code{total_duration}),
-\code{ahr} (average hazard ratio), \code{event} (expected number of events),
+\code{ahr} (average hazard ratio), \code{n} (sample size), \code{event} (expected number of events),
 \code{info} (information under given scenarios), \code{and} info0
 (information under related null hypothesis) for each value of
 \code{total_duration} input.
@@ -75,13 +75,13 @@ and enrollment pattern where the enrollment, failure and dropout rates changes o
 }
 
 \examples{
-# Example: default
+# Example 1: default
 ahr()
 
-# Example: default with multiple analysis times (varying total_duration)
+# Example 2: default with multiple analysis times (varying total_duration)
 ahr(total_duration = c(15, 30))
 
-# Stratified population
+# Example 3: stratified population
 enroll_rate <- define_enroll_rate(
   stratum = c(rep("Low", 2), rep("High", 3)),
   duration = c(2, 10, 4, 4, 8),
@@ -89,7 +89,7 @@ enroll_rate <- define_enroll_rate(
 )
 fail_rate <- define_fail_rate(
   stratum = c(rep("Low", 2), rep("High", 2)),
-  duration = 1,
+  duration = c(1, Inf, 1, Inf),
   fail_rate = c(.1, .2, .3, .4),
   dropout_rate = .001,
   hr = c(.9, .75, .8, .6)

@@ -3,7 +3,7 @@
 #
 #  This file is part of the gsDesign2 program.
 #
-#  gsDesign2 is free software: you can redistribute it and/or modify
+#  gsDesign2 is free software: you can re-distribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
 #  (at your option) any later version.
@@ -44,8 +44,6 @@
 #'    \item Return a data frame with a single row with the output from `AHR()` got the specified output.
 #'    }
 #'  }
-#'
-#' @importFrom stats uniroot
 #'
 #' @export
 #'
@@ -127,7 +125,7 @@ expected_time <- function(
       enroll_rate = enroll_rate, fail_rate = fail_rate,
       total_duration = res$root, ratio = ratio
     )
-    return(ans)
+    return(ans |> select(-n))
   }
 }
 

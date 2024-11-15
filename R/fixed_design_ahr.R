@@ -39,8 +39,6 @@
 #'   and `1 - alpha` otherwise).
 #' @param study_duration Study duration.
 #'
-#' @importFrom dplyr filter
-#'
 #' @returns A list of design characteristic summary.
 #'
 #' @export
@@ -102,6 +100,7 @@ fixed_design_ahr <- function(
   # Generate design ----
   if (is.null(power)) {
     d <- gs_power_ahr(
+      upper = gs_b, lower = gs_b,
       upar = qnorm(1 - alpha), lpar = -Inf,
       enroll_rate = enroll_rate,
       fail_rate = fail_rate,
@@ -112,6 +111,7 @@ fixed_design_ahr <- function(
   } else {
     d <- gs_design_ahr(
       alpha = alpha, beta = 1 - power,
+      upper = gs_b, lower = gs_b,
       upar = qnorm(1 - alpha), lpar = -Inf,
       enroll_rate = enroll_rate,
       fail_rate = fail_rate,
@@ -119,7 +119,7 @@ fixed_design_ahr <- function(
       analysis_time = study_duration
     )
   }
-  ans <- tibble::tibble(
+  ans <- tibble(
     design = "ahr",
     n = d$analysis$n,
     event = d$analysis$event,

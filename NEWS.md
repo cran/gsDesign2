@@ -1,3 +1,48 @@
+# gsDesign2 1.1.3
+
+## Bug fixes
+
+- Fix the bug of `gs_design_rd()` when `info_scale = "h0_h1_info"` (#402, thanks to @LittleBeannie).
+- Fix the bug of `gs_spending_combo()` to enable HSD spending function (#444, thanks to @LittleBeannie).
+- Fix the bug of `fixed_design_maxcombo()` regarding the upper bounds (#445, thanks to @elong0527).
+- Fix the bug of `gs_design_wlr()` when the design is driven by information fraction only (#446, thanks to @LittleBeannie).
+- Fix the bug of `pw_info()` when there are many piecewise HRs (#460, thanks to @LittleBeannie).
+
+## Statistical improvements
+
+- The `gs_update_ahr()` function (test version) is updated to
+
+  + Enable unchanged futility bounds when it is fixed at the original design (#408, thanks to @LittleBeannie).
+  + Allow boundary updates when only certain interim analysis data is available (#436, thanks to @LittleBeannie).
+  + Allow boundary updates when alpha changes by keeping the same `info_scale` as the original design (#470, @LittleBeannie).
+
+- Rounding of integer design is updated (#488, #484, #486, thanks to @LittleBeannie).
+- Integer design (i.e., integer sample size and events) is updated to ensure exact integer sample size and events  (#452, #460, thanks to @LittleBeannie and @yihui).
+- Change the information fraction displayed at the summary-gt table from under H1 to H0 for logrank tests (#439, thanks to @LittleBeannie).
+- Add the sample size as the output of `ahr()` and `pw_info()` (#427, #433, thanks to @LittleBeannie).
+
+## User interface improvements
+
+- Enable passing named vector of `col_decimals` and `analysis_decimals` to `summary.gs_design()` (#403, #431, @jdblischak).
+
+## Coding practice improvements
+
+- Add robust check if `lower` is equivalent to `gs_b` (#413, thanks to @jdblischak )
+- The `summary()`, `as_gt()` `as_rtf()`, and `to_integer()` functions are refactored (#448, #449, #450, #465, #461, thanks to @yihui).
+- Remove the `full_alpha` argument from `as_rtf.gs_design()` (#458, thanks to @yihui).
+- Other coding practice improvement worth mentioning (#409, #412, #429, #437, #440, #447, #453, #464, #467, $475, thanks to @yihui, @nanxstats, and @jdblischak).
+
+## Documentation
+
+- Update the documentation of `gs_b()` (#415, @jdblischak)
+
+## Testing
+
+- More developer tests of `gs_power_ahr()` are added (#420, @LittleBeannie).
+- More developer tests of `summary()` are added (#422, #426, thanks to @yuliasidi, @jdblischak and @LittleBeannie).
+- Independent tests of `ahr_blinded()` are added (#435, thanks to @DMuriuki).
+- More developer tests of `to_integer()` are added (#476, thanks to @LittleBeannie).
+
 # gsDesign2 1.1.2
 
 ## New features
@@ -108,7 +153,7 @@
 - Add CRAN download counts badge (#215).
 - Update documentation of `gs_design_rd()` (#220).
 - Format footnote numbers using decimal notation (#222).
-- Split C++ functions into individual cpp and header files (#224).
+- Split C++ functions into individual `.cpp` and header files (#224).
 
 ## Bug fixes
 
@@ -123,8 +168,8 @@
 - Correct the `fixed_design()` function in the application of `rmst` (#212).
 - Rename the `info_scale` argument options from `c(0, 1, 2)` to `c("h0_h1_info", "h0_info", "h1_info")` to be more informative and make the default value (`"h0_h1_info"`) clear (#203).
 - Add missing global functions/variables (#213).
-- Fix outdated argument names and use canonical style for text elements in README (#198).
-- Add a CRAN downloads badge to the readme to show the monthly downloads (#216).
+- Fix outdated argument names and use canonical style for text elements in `README.md` (#198).
+- Add a CRAN downloads badge to `README.md` to show the monthly downloads (#216).
 
 ## Bug fixes
 

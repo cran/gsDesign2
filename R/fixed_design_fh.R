@@ -24,8 +24,6 @@
 #' @param rho test parameter in Fleming-Harrington method.
 #' @param gamma test parameter in Fleming-Harrington method.
 #'
-#' @importFrom dplyr filter
-#'
 #' @export
 #'
 #' @rdname fixed_design
@@ -99,6 +97,7 @@ fixed_design_fh <- function(
   }
   if (is.null(power)) {
     d <- gs_power_wlr(
+      upper = gs_b, lower = gs_b,
       upar = qnorm(1 - alpha), lpar = -Inf,
       enroll_rate = enroll_rate,
       fail_rate = fail_rate,
@@ -110,6 +109,7 @@ fixed_design_fh <- function(
   } else {
     d <- gs_design_wlr(
       alpha = alpha, beta = 1 - power,
+      upper = gs_b, lower = gs_b,
       upar = qnorm(1 - alpha), lpar = -Inf,
       enroll_rate = enroll_rate,
       fail_rate = fail_rate,
@@ -118,7 +118,7 @@ fixed_design_fh <- function(
       analysis_time = study_duration
     )
   }
-  ans <- tibble::tibble(
+  ans <- tibble(
     design = "fh",
     n = d$analysis$n,
     event = d$analysis$event,

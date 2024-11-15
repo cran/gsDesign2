@@ -46,7 +46,7 @@
 #' x %>% summary()
 #'
 #' # Example 2: given sample size and compute power
-#' x <- fixed_design_fh(
+#' x <- fixed_design_lf(
 #'   alpha = .025,
 #'   enroll_rate = define_enroll_rate(duration = 18, rate = 20),
 #'   fail_rate = define_fail_rate(
@@ -173,7 +173,7 @@ fixed_design_lf <- function(
       rr[, 1]
     })
   )
-  ans <- tibble::tibble(
+  ans <- tibble(
     design = "lf",
     n = d$n,
     event = d$d,
