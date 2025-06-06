@@ -1,4 +1,4 @@
-#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2025 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -16,21 +16,30 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#' Group sequential design using average hazard ratio under non-proportional hazards
+#' Calculate sample size and bounds given targeted power and Type I error in group sequential design using average hazard ratio under non-proportional hazards
 #'
-#' @param enroll_rate Enrollment rates.
-#' @param fail_rate Failure and dropout rates.
-#' @param ratio Experimental:Control randomization ratio (not yet implemented).
+#' @param enroll_rate Enrollment rates defined by \code{define_enroll_rate()}.
+#' @param fail_rate Failure and dropout rates defined by \code{define_fail_rate()}.
+#' @param ratio Experimental:Control randomization ratio.
 #' @param alpha One-sided Type I error.
 #' @param beta Type II error.
-#' @param info_frac Targeted information fraction at each analysis.
-#' @param analysis_time Minimum time of analysis.
+#' @param info_frac Targeted information fraction for analyses. See details.
+#' @param analysis_time Targeted calendar timing of analyses. See details.
 #' @param binding Indicator of whether futility bound is binding;
 #'   default of `FALSE` is recommended.
 #' @param upper Function to compute upper bound.
+#'   - \code{gs_spending_bound()}: alpha-spending efficacy bounds.
+#'   - \code{gs_b()}: fixed efficacy bounds.
 #' @param upar Parameters passed to `upper`.
-#' @param lower Function to compute lower bound.
-#' @param lpar Parameters passed to `lower`.
+#'   - If `upper = gs_b`, then `upar` is a numerical vector specifying the fixed efficacy bounds per analysis.
+#'   - If `upper = gs_spending_bound`, then `upar` is a list including
+#'       - `sf` for the spending function family.
+#'       - `total_spend` for total alpha spend.
+#'       - `param` for the parameter of the spending function.
+#'       - `timing` specifies spending time if different from information-based spending; see details.
+#' @param lower Function to compute lower bound, which can be set up similarly as `upper`.
+#' See [this vignette](https://merck.github.io/gsDesign2/articles/story-seven-test-types.html).
+#' @param lpar Parameters passed to `lower`, which can be set up similarly as `upar.`
 #' @param info_scale Information scale for calculation. Options are:
 #'   - `"h0_h1_info"` (default): variance under both null and alternative hypotheses is used.
 #'   - `"h0_info"`: variance under null hypothesis is used.
@@ -38,6 +47,9 @@
 #' @param h1_spending Indicator that lower bound to be set by spending
 #'   under alternate hypothesis (input `fail_rate`)
 #'   if spending is used for lower bound.
+#'   If this is `FALSE`, then the lower bound spending is under the null hypothesis.
+#'   This is for two-sided symmetric or asymmetric testing under the null hypothesis;
+#'   See [this vignette](https://merck.github.io/gsDesign2/articles/story-seven-test-types.html).
 #' @param test_upper Indicator of which analyses should include an upper
 #'   (efficacy) bound; single value of `TRUE` (default) indicates all analyses;
 #'   otherwise, a logical vector of the same length as `info` should indicate
@@ -51,11 +63,17 @@
 #'   Jennison and Turnbull (2000); default is 18, range is 1 to 80.
 #'   Larger values provide larger number of grid points and greater accuracy.
 #'   Normally, `r` will not be changed by the user.
-#' @param tol Tolerance parameter for boundary convergence (on Z-scale).
-#' @param interval An interval that is presumed to include the time at which
+#' @param tol Tolerance parameter for boundary convergence (on Z-scale); normally not changed by the user.
+#' @param interval An interval presumed to include the times at which
 #'   expected event count is equal to targeted event.
+#'   Normally, this can be ignored by the user as it is set to `c(.01, 1000)`.
 #'
 #' @return A list with input parameters, enrollment rate, analysis, and bound.
+#'   - The `$input` is a list including `alpha`, `beta`, `ratio`, etc.
+#'   - The `$enroll_rate` is a table showing the enrollment for arriving the targeted power (`1 - beta`).
+#'   - The `$fail_rate` is a table showing the failure and dropout rates, which is the same as input.
+#'   - The `$bound` is a table summarizing the efficacy and futility bound per analysis.
+#'   - The `analysis` is a table summarizing the analysis time, sample size, events, average HR, treatment effect and statistical information per analysis.
 #'
 #' @section Specification:
 #' \if{latex}{
@@ -86,10 +104,18 @@
 #' }
 #' \if{html}{The contents of this section are shown in PDF user manual only.}
 #'
-#' @details
-#' To be added.
-#'
 #' @export
+#'
+#' @details
+#' The parameters `info_frac` and `analysis_time` are used to determine the timing for interim and final analyses.
+#'  - If the interim analysis is determined by targeted information fraction and the study duration is known,
+#'    then `info_frac` is a numerical vector where each element (greater than 0 and less than or equal to 1)
+#'    represents the information fraction for each analysis.
+#'    The `analysis_time`, which defaults to 36, indicates the time for the final analysis.
+#'  - If interim analyses are determined solely by the targeted calendar analysis timing from start of study,
+#'    then `analysis_time` will be a vector specifying the time for each analysis.
+#'  - If both the targeted analysis time and the targeted information fraction are utilized for a given analysis,
+#'    then timing will be the maximum of the two with both `info_frac` and `analysis_time` provided as vectors.
 #'
 #' @examples
 #' library(gsDesign)
@@ -203,6 +229,8 @@ gs_design_ahr <- function(
     info_frac <- 1
   }
   info_scale <- match.arg(info_scale)
+  upper <- match.fun(upper)
+  lower <- match.fun(lower)
 
   # Check inputs ----
   check_analysis_time(analysis_time)
@@ -217,7 +245,7 @@ gs_design_ahr <- function(
   # Check if alpha is same as alpha spending ----
   if (identical(upper, gs_spending_bound)) {
     if (!is.null(upar$total_spend)) {
-      if (methods::missingArg(alpha)) {
+      if (missing(alpha)) {
         alpha <- upar$total_spend
       } else {
         if (alpha != upar$total_spend) {
@@ -351,7 +379,7 @@ gs_design_ahr <- function(
   # Get analysis summary to output ----
   analysis <- allout %>%
     select(analysis, time, n, event, ahr, theta, info, info0, info_frac) %>%
-    mutate(info_frac0 = event / last(event)) %>%
+    mutate(info_frac0 = event / last_(event)) %>%
     unique() %>%
     arrange(analysis)
 
@@ -378,5 +406,7 @@ gs_design_ahr <- function(
   )
 
   ans <- add_class(ans, if (!binding) "non_binding", "ahr", "gs_design")
+  attr(ans, 'uninteger_is_from') <- "gs_design_ahr"
+
   return(ans)
 }

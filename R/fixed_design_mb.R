@@ -1,4 +1,4 @@
-#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2025 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -90,9 +90,7 @@ fixed_design_mb <- function(
   )
 
   # Generate design ----
-  weight <- function(x, arm0, arm1) {
-    wlr_weight_mb(x, arm0, arm1, tau = tau, w_max = w_max)
-  }
+  weight <- list(method = "mb", param = list(tau = tau, w_max = w_max))
   if (is.null(power)) {
     d <- gs_power_wlr(
       enroll_rate = enroll_rate,
@@ -129,7 +127,7 @@ fixed_design_mb <- function(
   )
   y <- list(
     input = input, enroll_rate = d$enroll_rate, fail_rate = d$fail_rate, analysis = ans,
-    design = "mb", design_par = list(tau = tau)
+    design = "mb", design_par = list(tau = tau, w_max = w_max)
   )
   class(y) <- c("fixed_design", class(y))
   return(y)

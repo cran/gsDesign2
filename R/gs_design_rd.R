@@ -1,4 +1,4 @@
-#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2025 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -278,5 +278,7 @@ gs_design_rd <- function(p_c = tibble::tibble(stratum = "All", rate = .2),
   )
 
   ans <- add_class(ans, if (!binding) "non_binding", "rd", "gs_design")
+  attr(ans, 'uninteger_is_from') <- "gs_design_rd"
+
   return(ans)
 }

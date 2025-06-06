@@ -1,4 +1,4 @@
-#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2025 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -76,8 +76,8 @@ to_integer <- function(x, ...) {
 #'   ),
 #'   study_duration = 36
 #' )
-#' x |>
-#'   to_integer() |>
+#' x %>%
+#'   to_integer() %>%
 #'   summary()
 #'
 #' # FH
@@ -93,8 +93,8 @@ to_integer <- function(x, ...) {
 #'   rho = 0.5, gamma = 0.5,
 #'   study_duration = 36, ratio = 1
 #' )
-#' x |>
-#'   to_integer() |>
+#' x %>%
+#'   to_integer() %>%
 #'   summary()
 #'
 #' # MB
@@ -106,11 +106,11 @@ to_integer <- function(x, ...) {
 #'     fail_rate = log(2) / 12, hr = c(1, .6),
 #'     dropout_rate = .001
 #'   ),
-#'   tau = 4,
+#'   tau = Inf, w_max = 2,
 #'   study_duration = 36, ratio = 1
 #' )
-#' x |>
-#'   to_integer() |>
+#' x %>%
+#'   to_integer() %>%
 #'   summary()
 #' }
 to_integer.fixed_design <- function(x, round_up_final = TRUE, ratio = x$input$ratio, ...) {
@@ -193,12 +193,7 @@ to_integer.fixed_design <- function(x, round_up_final = TRUE, ratio = x$input$ra
       ratio = x$input$ratio,
       upper = gs_b, lower = gs_b,
       upar = qnorm(1 - x$input$alpha), lpar = -Inf,
-      weight = function(s, arm0, arm1) {
-        wlr_weight_fh(s, arm0, arm1,
-          rho = x$design_par$rho,
-          gamma = x$design_par$gamma
-        )
-      }
+      weight = list(method = "fh", param = list(rho = x$design_par$rho, gamma = x$design_par$gamma))
     )
 
     analysis <- tibble(
@@ -224,12 +219,7 @@ to_integer.fixed_design <- function(x, round_up_final = TRUE, ratio = x$input$ra
       event = event_new,
       analysis_time = NULL,
       ratio = x$input$ratio,
-      weight = function(s, arm0, arm1) {
-        wlr_weight_fh(s, arm0, arm1,
-          rho = -1, gamma = 0,
-          tau = x$design_par$tau
-        )
-      },
+      weight = list(method = "mb", param = list(tau = x$design_par$tau, w_max = x$design_par$w_max)),
       upper = gs_b, lower = gs_b,
       upar = qnorm(1 - x$input$alpha), lpar = -Inf
     )
@@ -283,8 +273,8 @@ to_integer.fixed_design <- function(x, round_up_final = TRUE, ratio = x$input$ra
 #'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL),
 #'   lower = gs_b,
 #'   lpar = c(-Inf, -Inf)
-#' ) |>
-#'   to_integer() |>
+#' ) %>%
+#'   to_integer() %>%
 #'   summary()
 #'
 #' gs_design_wlr(
@@ -293,8 +283,8 @@ to_integer.fixed_design <- function(x, round_up_final = TRUE, ratio = x$input$ra
 #'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL),
 #'   lower = gs_b,
 #'   lpar = c(-Inf, -Inf)
-#' ) |>
-#'   to_integer() |>
+#' ) %>%
+#'   to_integer() %>%
 #'   summary()
 #'
 #' gs_design_rd(
@@ -307,8 +297,8 @@ to_integer.fixed_design <- function(x, round_up_final = TRUE, ratio = x$input$ra
 #'   upar = list(sf = gsDesign::sfLDOF, total_spend = 0.025, param = NULL),
 #'   lower = gs_b,
 #'   lpar = c(-Inf, -Inf)
-#' ) |>
-#'   to_integer() |>
+#' ) %>%
+#'   to_integer() %>%
 #'   summary()
 #'
 #' # Example 2: Calendar based spending
@@ -321,7 +311,7 @@ to_integer.fixed_design <- function(x, round_up_final = TRUE, ratio = x$input$ra
 #'   ),
 #'   lower = gs_b,
 #'   lpar = c(-Inf, -Inf)
-#' ) |> to_integer()
+#' ) %>% to_integer()
 #'
 #' # The IA nominal p-value is the same as the IA alpha spending
 #' x$bound$`nominal p`[1]
@@ -468,6 +458,7 @@ to_integer.gs_design <- function(x, round_up_final = TRUE, ratio = x$input$ratio
       interval = c(0.01, max(x$analysis$time) + 100),
       integer = TRUE
     )
+    if (is_ahr) power_args["h1_spending"] <- x$input["h1_spending"]
     if (is_wlr) power_args[c("weight", "approx")] <- x$input[c("weight", "approx")]
     x_new <- do.call(if (is_wlr) gs_power_wlr else gs_power_ahr, power_args)
   } else {
@@ -568,6 +559,21 @@ to_integer.gs_design <- function(x, round_up_final = TRUE, ratio = x$input$ratio
   # Make n and event of x_new$analysis exactly integers
   x_new$analysis$n <- round(x_new$analysis$n)
   if (!is_rd) x_new$analysis$event <- round(x_new$analysis$event)
+
+  # Add attributes to x_new to identify whether it is a gs_design_ahr orbject or gs_power_ahr object
+  if ("analysis_time" %in% names(x$input) && "info_frac" %in% names(x$input) && "ahr" %in% class(x)) {
+    attr(x_new, 'uninteger_is_from') <- "gs_design_ahr"
+  } else if ("analysis_time" %in% names(x$input) && "event" %in% names(x$input) && "ahr" %in% class(x)) {
+    attr(x_new, 'uninteger_is_from') <- "gs_power_ahr"
+  } else if ("analysis_time" %in% names(x$input) && "info_frac" %in% names(x$input) && "wlr" %in% class(x)) {
+    attr(x_new, 'uninteger_is_from') <- "gs_design_wlr"
+  } else if ("analysis_time" %in% names(x$input) && "event" %in% names(x$input) && "wlr" %in% class(x)) {
+    attr(x_new, 'uninteger_is_from') <- "gs_power_wlr"
+  } else if (!("n" %in% names(x$input)) && "rd" %in% class(x)) {
+    attr(x_new, 'uninteger_is_from') <- "gs_design_rd"
+  } else if ("n" %in% names(x$input) && "rd" %in% class(x)) {
+    attr(x_new, 'uninteger_is_from') <- "gs_power_rd"
+  }
 
   return(x_new)
 }

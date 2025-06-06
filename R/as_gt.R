@@ -1,4 +1,4 @@
-#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2025 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -32,7 +32,9 @@ as_gt <- function(x, ...) {
 #'
 #' @export
 #'
-#' @examplesIf interactive() && !identical(Sys.getenv("IN_PKGDOWN"), "true")
+#' @examples
+#' # Fixed design examples ----
+#'
 #' library(dplyr)
 #'
 #' # Enrollment rate
@@ -81,7 +83,8 @@ as_gt <- function(x, ...) {
 as_gt.fixed_design <- function(x, title = NULL, footnote = NULL, ...) {
   method <- fd_method(x)
   ans <- gt::gt(x) %>%
-    gt::tab_header(title = title %||% fd_title(method)) %>%
+    gt::tab_header(title = title %||% fd_title(method))
+  if (!isFALSE(footnote)) ans <- ans %>%
     gt::tab_footnote(
       footnote = footnote %||% fd_footnote(x, method),
       locations = gt::cells_title(group = "title")
@@ -138,14 +141,15 @@ fd_footnote <- function(x, method) {
 #' @param title A string to specify the title of the gt table.
 #' @param subtitle A string to specify the subtitle of the gt table.
 #' @param colname_spanner A string to specify the spanner of the gt table.
-#' @param colname_spannersub A vector of strings to specify the spanner details of the gt table.
+#' @param colname_spannersub A vector of strings to specify the spanner details
+#'   of the gt table.
 #' @param footnote A list containing `content`, `location`, and `attr`.
-#'   `content` is a vector of string to specify the footnote text;
-#'   `location` is a vector of string to specify the locations to put the
-#'   superscript of the footnote index;
-#'   `attr` is a vector of string to specify the attributes of the footnotes,
-#'   for example, `c("colname", "title", "subtitle", "analysis", "spanner")`;
-#'   users can use the functions in the `gt` package to customize the table.
+#'   `content` is a vector of string to specify the footnote text; `location` is
+#'   a vector of string to specify the locations to put the superscript of the
+#'   footnote index; `attr` is a vector of string to specify the attributes of
+#'   the footnotes, for example, `c("colname", "title", "subtitle", "analysis",
+#'   "spanner")`; users can use the functions in the `gt` package to customize
+#'   the table. To disable footnotes, use `footnote = FALSE`.
 #' @param display_bound A vector of strings specifying the label of the bounds.
 #'   The default is `c("Efficacy", "Futility")`.
 #' @param display_columns A vector of strings specifying the variables to be
@@ -154,7 +158,10 @@ fd_footnote <- function(x, method) {
 #'
 #' @export
 #'
-#' @examplesIf interactive() && !identical(Sys.getenv("IN_PKGDOWN"), "true")
+#' @examples
+#' \donttest{
+#' # Group sequential design examples ---
+#'
 #' library(dplyr)
 #' # Example 1 ----
 #' # The default output
@@ -163,7 +170,7 @@ fd_footnote <- function(x, method) {
 #'   summary() %>%
 #'   as_gt()
 #'
-#' gs_power_ahr() %>%
+#' gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) %>%
 #'   summary() %>%
 #'   as_gt()
 #'
@@ -171,7 +178,7 @@ fd_footnote <- function(x, method) {
 #'   summary() %>%
 #'   as_gt()
 #'
-#' gs_power_wlr() %>%
+#' gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) %>%
 #'   summary() %>%
 #'   as_gt()
 #'
@@ -190,7 +197,7 @@ fd_footnote <- function(x, method) {
 #' # Example 2 ----
 #' # Usage of title = ..., subtitle = ...
 #' # to edit the title/subtitle
-#' gs_power_wlr() %>%
+#' gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) %>%
 #'   summary() %>%
 #'   as_gt(
 #'     title = "Bound Summary",
@@ -200,7 +207,7 @@ fd_footnote <- function(x, method) {
 #' # Example 3 ----
 #' # Usage of colname_spanner = ..., colname_spannersub = ...
 #' # to edit the spanner and its sub-spanner
-#' gs_power_wlr() %>%
+#' gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) %>%
 #'   summary() %>%
 #'   as_gt(
 #'     colname_spanner = "Cumulative probability to cross boundaries",
@@ -210,7 +217,7 @@ fd_footnote <- function(x, method) {
 #' # Example 4 ----
 #' # Usage of footnote = ...
 #' # to edit the footnote
-#' gs_power_wlr() %>%
+#' gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) %>%
 #'   summary() %>%
 #'   as_gt(
 #'     footnote = list(
@@ -228,17 +235,17 @@ fd_footnote <- function(x, method) {
 #' # Example 5 ----
 #' # Usage of display_bound = ...
 #' # to either show efficacy bound or futility bound, or both(default)
-#' gs_power_wlr() %>%
+#' gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) %>%
 #'   summary() %>%
 #'   as_gt(display_bound = "Efficacy")
 #'
 #' # Example 6 ----
 #' # Usage of display_columns = ...
 #' # to select the columns to display in the summary table
-#' gs_power_wlr() %>%
+#' gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) %>%
 #'   summary() %>%
 #'   as_gt(display_columns = c("Analysis", "Bound", "Nominal p", "Z", "Probability"))
-#'
+#' }
 as_gt.gs_design <- function(
     x,
     title = NULL,
@@ -267,6 +274,7 @@ as_gt.gs_design <- function(
     gt::tab_header(title = parts$title, subtitle = parts$subtitle)
 
   # Add footnotes ----
+  add_footnote <- !isFALSE(footnote)
   footnote <- parts$footnote
   for (i in seq_along(footnote$content)) {
     att <- footnote$attr[i]
@@ -288,7 +296,7 @@ as_gt.gs_design <- function(
   }
 
   # add footnote for non-binding design
-  footnote_nb <- gsd_footnote_nb(x_old, parts$alpha)
+  footnote_nb <- if (add_footnote) gsd_footnote_nb(x_old, parts$alpha)
   if (!is.null(footnote_nb)) x <- gt::tab_footnote(
     x,
     footnote = footnote_nb,
@@ -379,8 +387,8 @@ gsd_footnote_row <- function(x, bound) {
 # a list of information for `as_[gt|rtf].gs_design()` methods: the transformed
 # data, title, and footnote, etc.
 gsd_parts <- function(
-    x, title, subtitle, spannersub, footnote, bound, columns, inf_bound,
-    alpha_column = spannersub[2], transform = identity
+  x, title, subtitle, spannersub, footnote, bound, columns, inf_bound,
+  transform = identity
 ) {
   method <- intersect(c("ahr", "wlr", "combo", "rd"), class(x))[1]
   if (!inf_bound) x <- filter(x, !is.infinite(Z))
@@ -411,8 +419,8 @@ gsd_parts <- function(
   list(
     x = arrange(x2, Analysis),
     title = title, subtitle = subtitle,
-    footnote = footnote %||% gsd_footnote(method, columns),
-    alpha = max(filter(x, Bound == bound[1])[[alpha_column]])
+    footnote = if (!isFALSE(footnote)) footnote %||% gsd_footnote(method, columns),
+    alpha = max(filter(x, Bound == bound[1])[["Null hypothesis"]])
   )
 }
 
@@ -421,6 +429,6 @@ gsd_parts <- function(
 
 #' @export
 as_gt.simtrial_gs_wlr <- function(x, ...) {
-  f <- utils::getFromNamespace("as_gt.simtrial_gs_wlr", "simtrial")
+  f <- getFromNamespace("as_gt.simtrial_gs_wlr", "simtrial")
   f(x, ...)
 }

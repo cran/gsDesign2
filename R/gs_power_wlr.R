@@ -1,4 +1,4 @@
-#  Copyright (c) 2024 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
+#  Copyright (c) 2025 Merck & Co., Inc., Rahway, NJ, USA and its affiliates.
 #  All rights reserved.
 #
 #  This file is part of the gsDesign2 program.
@@ -176,7 +176,7 @@ gs_power_wlr <- function(enroll_rate = define_enroll_rate(duration = c(2, 2, 10)
                          test_upper = TRUE,
                          test_lower = TRUE,
                          ratio = 1,
-                         weight = wlr_weight_fh,
+                         weight = "logrank",
                          info_scale = c("h0_h1_info", "h0_info", "h1_info"),
                          approx = "asymptotic",
                          r = 18,
@@ -305,6 +305,8 @@ gs_power_wlr <- function(enroll_rate = define_enroll_rate(duration = c(2, 2, 10)
   )
 
   ans <- add_class(ans, if (!binding) "non_binding", "wlr", "gs_design")
+  attr(ans, 'uninteger_is_from') <- "gs_power_wlr"
+
   return(ans)
 }
 

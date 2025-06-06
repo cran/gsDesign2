@@ -31,18 +31,18 @@ as_gt(x, ...)
 \item{title}{A string to specify the title of the gt table.}
 
 \item{footnote}{A list containing \code{content}, \code{location}, and \code{attr}.
-\code{content} is a vector of string to specify the footnote text;
-\code{location} is a vector of string to specify the locations to put the
-superscript of the footnote index;
-\code{attr} is a vector of string to specify the attributes of the footnotes,
-for example, \code{c("colname", "title", "subtitle", "analysis", "spanner")};
-users can use the functions in the \code{gt} package to customize the table.}
+\code{content} is a vector of string to specify the footnote text; \code{location} is
+a vector of string to specify the locations to put the superscript of the
+footnote index; \code{attr} is a vector of string to specify the attributes of
+the footnotes, for example, \code{c("colname", "title", "subtitle", "analysis", "spanner")}; users can use the functions in the \code{gt} package to customize
+the table. To disable footnotes, use \code{footnote = FALSE}.}
 
 \item{subtitle}{A string to specify the subtitle of the gt table.}
 
 \item{colname_spanner}{A string to specify the spanner of the gt table.}
 
-\item{colname_spannersub}{A vector of strings to specify the spanner details of the gt table.}
+\item{colname_spannersub}{A vector of strings to specify the spanner details
+of the gt table.}
 
 \item{display_bound}{A vector of strings specifying the label of the bounds.
 The default is \code{c("Efficacy", "Futility")}.}
@@ -59,7 +59,8 @@ A \code{gt_tbl} object.
 Convert summary table of a fixed or group sequential design object to a gt object
 }
 \examples{
-\dontshow{if (interactive() && !identical(Sys.getenv("IN_PKGDOWN"), "true")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+# Fixed design examples ----
+
 library(dplyr)
 
 # Enrollment rate
@@ -105,8 +106,9 @@ fixed_design_fh(
 ) \%>\%
   summary() \%>\%
   as_gt()
-\dontshow{\}) # examplesIf}
-\dontshow{if (interactive() && !identical(Sys.getenv("IN_PKGDOWN"), "true")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
+# Group sequential design examples ---
+
 library(dplyr)
 # Example 1 ----
 # The default output
@@ -115,7 +117,7 @@ gs_design_ahr() \%>\%
   summary() \%>\%
   as_gt()
 
-gs_power_ahr() \%>\%
+gs_power_ahr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) \%>\%
   summary() \%>\%
   as_gt()
 
@@ -123,7 +125,7 @@ gs_design_wlr() \%>\%
   summary() \%>\%
   as_gt()
 
-gs_power_wlr() \%>\%
+gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) \%>\%
   summary() \%>\%
   as_gt()
 
@@ -142,7 +144,7 @@ gs_power_rd() \%>\%
 # Example 2 ----
 # Usage of title = ..., subtitle = ...
 # to edit the title/subtitle
-gs_power_wlr() \%>\%
+gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) \%>\%
   summary() \%>\%
   as_gt(
     title = "Bound Summary",
@@ -152,7 +154,7 @@ gs_power_wlr() \%>\%
 # Example 3 ----
 # Usage of colname_spanner = ..., colname_spannersub = ...
 # to edit the spanner and its sub-spanner
-gs_power_wlr() \%>\%
+gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) \%>\%
   summary() \%>\%
   as_gt(
     colname_spanner = "Cumulative probability to cross boundaries",
@@ -162,7 +164,7 @@ gs_power_wlr() \%>\%
 # Example 4 ----
 # Usage of footnote = ...
 # to edit the footnote
-gs_power_wlr() \%>\%
+gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) \%>\%
   summary() \%>\%
   as_gt(
     footnote = list(
@@ -180,15 +182,15 @@ gs_power_wlr() \%>\%
 # Example 5 ----
 # Usage of display_bound = ...
 # to either show efficacy bound or futility bound, or both(default)
-gs_power_wlr() \%>\%
+gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) \%>\%
   summary() \%>\%
   as_gt(display_bound = "Efficacy")
 
 # Example 6 ----
 # Usage of display_columns = ...
 # to select the columns to display in the summary table
-gs_power_wlr() \%>\%
+gs_power_wlr(lpar = list(sf = gsDesign::sfLDOF, total_spend = 0.1)) \%>\%
   summary() \%>\%
   as_gt(display_columns = c("Analysis", "Bound", "Nominal p", "Z", "Probability"))
-\dontshow{\}) # examplesIf}
+}
 }
