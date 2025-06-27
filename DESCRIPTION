@@ -1,6 +1,6 @@
 Package: gsDesign2
 Title: Group Sequential Design with Non-Constant Effect
-Version: 1.1.4
+Version: 1.1.5
 Authors@R: c(
     person("Keaven", "Anderson", email = "keaven_anderson@merck.com", role = c("aut")),
     person("Yujie", "Zhao", email = "yujie.zhao@merck.com", role = c("aut", "cre")),
@@ -46,7 +46,7 @@ VignetteBuilder: knitr
 LinkingTo: Rcpp
 RoxygenNote: 7.3.2
 NeedsCompilation: yes
-Packaged: 2025-06-06 18:08:11 UTC; zhayuji4
+Packaged: 2025-06-27 21:25:39 UTC; zhayuji4
 Author: Keaven Anderson [aut],
   Yujie Zhao [aut, cre],
   Yilong Zhang [aut],
@@ -68,4 +68,4 @@ Author: Keaven Anderson [aut],
   Merck & Co., Inc., Rahway, NJ, USA and its affiliates [cph]
 Maintainer: Yujie Zhao <yujie.zhao@merck.com>
 Repository: CRAN
-Date/Publication: 2025-06-06 20:00:05 UTC
+Date/Publication: 2025-06-27 21:40:02 UTC

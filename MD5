@@ -1,6 +1,6 @@
-d7935f0d7c3b08a3360c92ed3cda45a2 *DESCRIPTION
+4adfde93b317b4e7309c3ffae144542e *DESCRIPTION
 2528a72f38b9ab3f53384b2e42ed1503 *NAMESPACE
-8d75aaec506bc01e2ca67223ede54d2a *NEWS.md
+42311b31b3adc669b5b97fdadec33a4d *NEWS.md
 301947e6d1882c5f72817cec6c8d30ed *R/RcppExports.R
 3d3cd75252b0b4ee30fe2bca4dcf502c *R/ahr.R
 2101c1036ac189e00ea2077635ebc59f *R/ahr_blinded.R
@@ -47,7 +47,7 @@ e0f3edb207a8b033da64043bcc7de0b9 *R/gs_spending_combo.R
 9beea803d1e66cce199c01c3b6172384 *R/rmst.R
 0f57713a879fa0c2e481c9d1bc60d8ae *R/summary.R
 85f640054dfbbf951a463d13699214aa *R/text_summary.R
-b7d2049302bd2ddbac9477236d2810e0 *R/to_integer.R
+211aaac3e2593410dfe370a335958c5b *R/to_integer.R
 45ec061ec5d7a955ad3e7da99752cb56 *R/utility_combo.R
 9be54e089fbe2d47e19558ec4abdd746 *R/utility_tidy_tbl.R
 8a074d86ce323a017821944e6005e712 *R/utility_wlr.R
@@ -60,7 +60,7 @@ d0a9ae333df905b50d065c84c9534b03 *inst/WORDLIST
 e300e0016164e7698000613545029ab2 *inst/achieved_vignettes/style.Rmd
 fd072225e6a69c07280af829319f2558 *inst/doc/gsDesign2.R
 2a3dccaad5864dff1d5881112ce27093 *inst/doc/gsDesign2.Rmd
-48041794e34e438eb843c1742d792135 *inst/doc/gsDesign2.html
+13da6739991a1553c97f54592b44f35e *inst/doc/gsDesign2.html
 6ae33760003b28f7348bae047246f2e0 *inst/example_run_time/timer.Rmd
 5a1b0d6242086790931a1d727f990238 *man/ahr.Rd
 d2708d08afb05e72b349dc9a8950f313 *man/ahr_blinded.Rd
@@ -166,7 +166,7 @@ ea93c110dd652530f12486cc2060b7b9 *tests/testthat/test-developer-gs_power_npe.R
 09ae4daddb72b7d053e19beb5181bab9 *tests/testthat/test-developer-gs_spending_bound.R
 6faaf036ffc4f32d3f97d02264bb24e7 *tests/testthat/test-developer-pw_info.R
 f73965cd17c8528653d1cae7baf5a6da *tests/testthat/test-developer-summary.R
-856ada0d2695a912235fccbc0a7c8d38 *tests/testthat/test-developer-to_integer.R
+27686ae083fdd1dfa566613dfd607cb5 *tests/testthat/test-developer-to_integer.R
 63b0010e13bb63c9def841abc9dfcba9 *tests/testthat/test-independent-ahr.R
 efe2deb1d3c5c5ff375c2b105ea57ade *tests/testthat/test-independent-ahr_blinded.R
 e381add51d8be7ec90a7b2104e8d395f *tests/testthat/test-independent-check_arg.R
